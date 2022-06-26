@@ -10,7 +10,7 @@ string ret_op_code(int code)
     case -2:
         return " - Greska pri otvaranju fajla!!!";
     case -3:
-        return " - Nedefinisana asemblerska naredba na liniji!!!";
+        return " - Nedefinisana asemblerska naredba!!!";
 
     default:
         break;
