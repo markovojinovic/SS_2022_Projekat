@@ -3,5 +3,8 @@
 using namespace std;
 int main()
 {
-    return Asembler::next_operation();
+    Asembler as("main.s", "neki_izlaz");
+    as.next_operation();
+
+    return 0;
 }
