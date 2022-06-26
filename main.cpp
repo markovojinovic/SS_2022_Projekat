@@ -1,9 +1,8 @@
-#include <iostream>
+#include "inc\asembler.h"
+
 using namespace std;
 
 int main()
 {
-    cout << "Opet da probamo";
-
-    return 0;
+    return next_operation();
 }
