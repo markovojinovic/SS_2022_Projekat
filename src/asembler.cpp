@@ -1,6 +1,6 @@
 #include "asembler.h"
 
-int next_operation()
+int Asembler::next_operation()
 {
     ifstream MyReadFile(file_name);
     if (!MyReadFile.is_open())

@@ -9,6 +9,10 @@ using namespace std;
 
 const string file_name = "main.s";
 
-int next_operation();
+class Asembler
+{
+public:
+    static int next_operation();
+};
 
 #endif
