@@ -10,20 +10,17 @@ using namespace std;
 class Asembler
 {
 public:
-    Asembler(string in_name, string out_name);
+    Asembler(string, string);
     ~Asembler();
-    int next_operation();
+    int next_instruction();
+    int get_code_of_instriction(string);
 
 private:
     int op_code;
     int line;
-    ifstream fajl;
+    ifstream file;
     string input_name;
     string output_name;
 };
-
-// op_code:
-//-2 ========= Greska pri otvaranju fajla
-//-3 ========= Nedefinisana asemblerska naredba
 
 #endif

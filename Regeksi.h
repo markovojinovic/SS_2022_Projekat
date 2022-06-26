@@ -7,7 +7,7 @@ using namespace std;
 regex any_symbol("(.*)");
 
 // regexes for cleaning input file
-regex rx_remove_comments("([^#]*)#.*");
+regex rx_comments("([^#]*)#.*");
 regex rx_find_extra_spaces(" {2,}");
 regex rx_find_tabs("\\t");
 // regex rx_find_empty_strings(""); // this lines will be skipped manually

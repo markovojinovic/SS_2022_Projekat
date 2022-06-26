@@ -1,4 +1,6 @@
 #include "asembler.h"
+#include "Regeksi.h"
+#include "OpCodeErrors.h"
 
 Asembler::Asembler(string in_name, string out_name)
 {
@@ -7,29 +9,41 @@ Asembler::Asembler(string in_name, string out_name)
 
     line = 0;
 
-    fajl.open(input_name);
-    if (!fajl || !fajl.is_open())
+    file.open(input_name);
+    if (!file || !file.is_open())
     {
         op_code = -2;
-        cout << "Operation code: " << op_code << " - Greska pri otvaranju fajla!!!" << endl;
+        cout << "Operation code: " << op_code << ret_op_code(op_code) << endl;
     }
 }
 
 Asembler::~Asembler()
 {
-    this->fajl.close();
+    this->file.close();
 }
 
-int Asembler::next_operation()
+int Asembler::next_instruction()
 {
     string red;
-    getline(this->fajl, red);
+    getline(this->file, red);
     if (red != "")
         this->line++;
 
-    // get_code_of_operation();
+    int rez = get_code_of_instriction(red);
     // switch za pozivanje funkcija ( u zavisnosti koja je asemblerska naredba )
 
-    return 0; // treba da se vrati kod operacije od 1 - koliko ima naredbi
-              // Ako je nedefinisana naredba, op_code = -3, i stampa se u kom je redu grska
+    if (rez > 0)
+        return rez;
+    else
+    {
+        op_code = -3;
+        return op_code;
+    }
+}
+
+int Asembler::get_code_of_instriction(string red)
+{
+    if (regex_match(red, rx_comments))
+        return 1;
+    return -3;
 }
