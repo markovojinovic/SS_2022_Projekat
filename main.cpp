@@ -1,8 +1,9 @@
-#include "inc\asembler.h"
-
+#include "asembler.h"
+#include <iostream>
+using namespace std;
 int main()
 {
-    int ret = Asembler::next_operation();
+    cout << "helo" << endl;
 
-    return ret;
+    return 1;
 }

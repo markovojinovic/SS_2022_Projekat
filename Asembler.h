@@ -1,8 +1,6 @@
-#ifndef _ASEMBLER_H_
-#define _ASEMBLER_H_
+#ifndef PROBA_ZA_PROJEKAT_IZ_SS_ASEMBLER_H
+#define PROBA_ZA_PROJEKAT_IZ_SS_ASEMBLER_H
 
-#include <iostream>
-#include <fstream>
 #include <string>
 
 using namespace std;
