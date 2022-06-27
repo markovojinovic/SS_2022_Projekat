@@ -13,7 +13,7 @@ Asembler::Asembler(string in_name, string out_name)
     if (!file || !file.is_open())
     {
         op_code = -2;
-        cout << "Operation code: " << op_code << ret_op_code(op_code) << endl;
+        printError(op_code, line);
     }
 }
 
@@ -37,8 +37,7 @@ int Asembler::next_instruction()
     else
     {
         op_code = -3;
-        cout << "Operation code: " << op_code << ret_op_code(op_code) << endl;
-        cout << "Line: " << this->line << endl;
+        printError(op_code, line);
         return op_code;
     }
 }

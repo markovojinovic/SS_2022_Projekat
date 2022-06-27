@@ -3,19 +3,20 @@
 
 #include <string>
 
-string ret_op_code(int code)
+void printError(int code, int line)
 {
     switch (code)
     {
     case -2:
-        return " - Greska pri otvaranju fajla!!!";
+        cout << "Operation code: " << code << "Greska pri otvaranju fajla!!!" << endl;
+        break;
     case -3:
-        return " - Nedefinisana asemblerska naredba!!!";
-
+        cout << "Operation code: " << code << "Nedefinisana asemblerka naredba!!!" << endl;
+        cout << "Line: " << line << endl;
+        break;
     default:
         break;
     }
-    return "";
 }
 
 #endif
