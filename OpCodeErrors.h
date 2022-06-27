@@ -19,4 +19,6 @@ void printError(int code, int line)
     }
 }
 
+// Dodatno: -1 preskoceno kao univerzalni kod greske
+
 #endif

@@ -25,7 +25,10 @@ Asembler::~Asembler()
 int Asembler::next_instruction()
 {
     string red;
-    getline(this->file, red);
+    if (!file.eof())
+        getline(this->file, red);
+    else
+        return 0; // Znaci da nije greska samo smo dosli do kraja fajla
     if (red != "")
         this->line++;
 
