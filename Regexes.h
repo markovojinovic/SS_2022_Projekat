@@ -17,7 +17,7 @@ string str_reg_num = "[0-7]";                // there are 8 registers: r0 - r7
 string symbol_or_literal = str_symbol + "|" + str_decimal_num + "|" + str_hexa_num;
 
 regex global_directive("^\\.global (" + str_symbol + "(," + str_symbol + ")*)$");
-regex extern_directive("(.extern)+");
+regex extern_directive(".(extern)(.*)");
 regex section_directive("^\\.section (" + str_symbol + ")$");
 regex word_directive("^\\.word ((" + symbol_or_literal + ")(,(" + symbol_or_literal + "))*)$");
 regex skip_directive("^\\.skip (" + str_decimal_num + "|" + str_hexa_num + ")$");
