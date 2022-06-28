@@ -14,14 +14,21 @@ string str_hexa_num = "0x[0-9A-F]+";         // this is a hexadecimal number
 string str_symbol = "[a-zA-Z][a-zA-Z0-9_]*"; // symbol can start only with letter and can contain letters, digits and _
 string str_reg_num = "[0-7]";                // there are 8 registers: r0 - r7
 
+regex filter_from_direktives("[a-zA-Z][a-zA-Z0-9_]*( )*");
+
 string symbol_or_literal = str_symbol + "|" + str_decimal_num + "|" + str_hexa_num;
 
-regex global_directive("^\\.global (" + str_symbol + "(," + str_symbol + ")*)$");
+regex global_directive(".(global)(.*)");
+regex global_directive_replace(".(global)");
 regex extern_directive(".(extern)(.*)");
-regex section_directive("^\\.section (" + str_symbol + ")$");
-regex word_directive("^\\.word ((" + symbol_or_literal + ")(,(" + symbol_or_literal + "))*)$");
-regex skip_directive("^\\.skip (" + str_decimal_num + "|" + str_hexa_num + ")$");
-regex end_directive("^\\.end$");
+regex extern_directive_replace(".(extern)");
+regex section_directive(".(section)(.*)");
+regex section_directive_replace(".(section)");
+regex word_directive(".(word)(.*)");
+regex word_directive_replace(".(word)");
+regex skip_directive(".(skip)(.*)");
+regex skip_directive_replace(".(skip)");
+regex end_directive(".(end)");
 
 regex label_only("^(" + str_symbol + "):$");             // nothing is after label
 regex label_with_command("^(" + str_symbol + "):(.*)$"); // something is after label

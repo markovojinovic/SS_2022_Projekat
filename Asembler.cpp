@@ -36,7 +36,7 @@ int Asembler::next_instruction()
         rez = get_code_of_instriction(red);
     if (rez == 0)
         return rez;
-    // switch za pozivanje funkcija ( u zavisnosti koja je asemblerska naredba )
+    // TODO: switch za pozivanje funkcija ( u zavisnosti koja je asemblerska naredba )
 
     if (rez > 0)
         return rez;
@@ -69,4 +69,32 @@ int Asembler::get_code_of_instriction(string red)
     }
 
     return -3;
+}
+
+void Asembler::extern_function(string red)
+{
+    string novi = regex_replace(red, extern_directive_replace, "");
+    novi = regex_replace(novi, regex("(, )"), " ");
+    smatch m;
+    while (regex_search(novi, m, filter_from_direktives))
+    {
+        this->extern_.push_back(m.str(0));
+        novi = m.suffix().str();
+    }
+
+    // TODO: zavrsiti ostatak za direktivu
+}
+
+void Asembler::global_function(string red)
+{
+    string novi = regex_replace(red, global_directive_replace, "");
+    novi = regex_replace(novi, regex("(, )"), " ");
+    smatch m;
+    while (regex_search(novi, m, filter_from_direktives))
+    {
+        this->global.push_back(m.str(0));
+        novi = m.suffix().str();
+    }
+
+    // TODO: zavrsiti ostatak za direktivu
 }

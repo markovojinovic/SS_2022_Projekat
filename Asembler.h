@@ -4,6 +4,7 @@
 #include <string>
 #include <iostream>
 #include <fstream>
+#include <list>
 
 using namespace std;
 
@@ -14,6 +15,8 @@ public:
     ~Asembler();
     int next_instruction();
     int get_code_of_instriction(string);
+    void extern_function(string);
+    void global_function(string);
 
 private:
     int op_code;
@@ -21,6 +24,8 @@ private:
     ifstream file;
     string input_name;
     string output_name;
+    list<string> global;
+    list<string> extern_;
 };
 
 #endif
