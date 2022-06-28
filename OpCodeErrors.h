@@ -8,10 +8,10 @@ void printError(int code, int line)
     switch (code)
     {
     case -2:
-        cout << "Operation code: " << code << "Greska pri otvaranju fajla!!!" << endl;
+        cout << "Operation code: " << code << " Greska pri otvaranju fajla!!!" << endl;
         break;
     case -3:
-        cout << "Operation code: " << code << "Nedefinisana asemblerka naredba!!!" << endl;
+        cout << "Operation code: " << code << " Nedefinisana asemblerka naredba!!!" << endl;
         cout << "Line: " << line << endl;
         break;
     default:

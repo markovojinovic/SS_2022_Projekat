@@ -1,5 +1,5 @@
 #include "asembler.h"
-#include "Regeksi.h"
+#include "Regexes.h"
 #include "OpCodeErrors.h"
 
 Asembler::Asembler(string in_name, string out_name)
@@ -29,10 +29,13 @@ int Asembler::next_instruction()
         getline(this->file, red);
     else
         return 0; // Znaci da nije greska samo smo dosli do kraja fajla
-    if (red != "")
-        this->line++;
+    this->line++;
 
-    int rez = get_code_of_instriction(red);
+    int rez = 0;
+    if (red != "")
+        rez = get_code_of_instriction(red);
+    if (rez == 0)
+        return rez;
     // switch za pozivanje funkcija ( u zavisnosti koja je asemblerska naredba )
 
     if (rez > 0)
@@ -47,7 +50,23 @@ int Asembler::next_instruction()
 
 int Asembler::get_code_of_instriction(string red)
 {
-    if (regex_match(red, rx_comments))
+    if (regex_match(red, comments))
         return 1;
+    if (regex_match(red, direktives))
+    {
+        if (regex_match(red, global_directive))
+            return 2;
+        if (regex_match(red, extern_directive))
+            return 3;
+        if (regex_match(red, section_directive))
+            return 4;
+        if (regex_match(red, word_directive))
+            return 5;
+        if (regex_match(red, skip_directive))
+            return 6;
+        if (regex_match(red, end_directive))
+            return 7;
+    }
+
     return -3;
 }
