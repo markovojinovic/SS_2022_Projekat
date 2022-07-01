@@ -1,6 +1,7 @@
 #include "asembler.h"
 #include "Regexes.h"
 #include "OpCodeErrors.h"
+#include <algorithm>
 
 Asembler::Asembler(string in_name, string out_name)
 {
@@ -34,11 +35,19 @@ int Asembler::next_instruction()
     int rez = 0;
     if (red != "")
         rez = get_code_of_instriction(red);
-    if (rez == 0)
-        return rez;
     // TODO: switch za pozivanje funkcija ( u zavisnosti koja je asemblerska naredba )
 
-    if (rez > 0)
+    switch (rez)
+    {
+    case 2:
+        global_function(red);
+        break;
+    case 3:
+        extern_function(red);
+        break;
+    }
+
+    if (rez >= 0)
         return rez;
     else
     {
@@ -78,7 +87,18 @@ void Asembler::extern_function(string red)
     smatch m;
     while (regex_search(novi, m, filter_from_direktives))
     {
-        this->extern_.push_back(m.str(0));
+        string new_symbol = m.str(0);
+        new_symbol = regex_replace(new_symbol, regex(" "), "");
+        for (string a : this->global)
+        {
+            if (a == new_symbol)
+            {
+                op_code = -4;
+                printError(-4, this->line);
+                return;
+            }
+        }
+        this->extern_.push_back(new_symbol);
         novi = m.suffix().str();
     }
 
@@ -92,7 +112,18 @@ void Asembler::global_function(string red)
     smatch m;
     while (regex_search(novi, m, filter_from_direktives))
     {
-        this->global.push_back(m.str(0));
+        string new_symbol = m.str(0);
+        new_symbol = regex_replace(new_symbol, regex(" "), "");
+        for (string a : this->extern_)
+        {
+            if (a == new_symbol)
+            {
+                op_code = -4;
+                printError(-4, this->line);
+                return;
+            }
+        }
+        this->global.push_back(new_symbol);
         novi = m.suffix().str();
     }
 
