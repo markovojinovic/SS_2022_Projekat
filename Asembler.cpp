@@ -8,7 +8,8 @@ Asembler::Asembler(string in_name, string out_name)
     this->input_name = in_name;
     this->output_name = out_name;
 
-    line = 0;
+    this->line = 0;
+    this->locationCounter = 0;
 
     file.open(input_name);
     if (!file || !file.is_open())
@@ -34,10 +35,15 @@ int Asembler::next_instruction()
 
     int rez = 0;
     if (red != "")
-        rez = get_code_of_instriction(red);
-    // TODO: switch za pozivanje funkcija ( u zavisnosti koja je asemblerska naredba )
+    {
+        red = regex_replace(red, filter_comment, "");
+        if (red != "")
+            rez = get_code_of_instriction(red);
+        else
+            return 1;
+    }
 
-    switch (rez)
+    switch (rez) // TODO: zavrsiti
     {
     case 2:
         global_function(red);
@@ -89,16 +95,48 @@ void Asembler::extern_function(string red)
     {
         string new_symbol = m.str(0);
         new_symbol = regex_replace(new_symbol, regex(" "), "");
+        bool dalje = false;
+
         for (string a : this->global)
         {
             if (a == new_symbol)
             {
                 op_code = -4;
-                printError(-4, this->line);
+                printError(op_code, this->line);
                 return;
             }
         }
-        this->extern_.push_back(new_symbol);
+
+        for (Symbol tr : this->symbolTable)
+        {
+            if (tr.name != new_symbol)
+                continue;
+            else
+            {
+                this->op_code = -6;
+                dalje = true;
+                printError(op_code, line);
+                break;
+            }
+        }
+
+        if (dalje)
+        {
+            novi = m.suffix().str();
+            continue;
+        }
+
+        bool contains = false;
+        for (string a : this->extern_)
+        {
+            if (a == new_symbol)
+                contains = true;
+        }
+        if (!contains)
+        {
+            this->add_to_symbol_table(Symbol(new_symbol, false), false);
+            this->extern_.push_back(new_symbol);
+        }
         novi = m.suffix().str();
     }
 
@@ -123,9 +161,54 @@ void Asembler::global_function(string red)
                 return;
             }
         }
-        this->global.push_back(new_symbol);
+        bool contains = false;
+        for (string a : this->global)
+        {
+            if (a == new_symbol)
+            {
+                contains = true;
+                this->add_to_symbol_table(Symbol(new_symbol, true), contains);
+            }
+        }
+        if (!contains)
+        {
+            this->global.push_back(new_symbol);
+            this->add_to_symbol_table(Symbol(new_symbol, true), false);
+        }
         novi = m.suffix().str();
     }
 
     // TODO: zavrsiti ostatak za direktivu
+}
+
+void Asembler::print_symbol_table() // TODO: zavrsiti ostatak
+{
+    for (Symbol a : this->symbolTable)
+        cout << a.name << " " << a.isGlobal << endl;
+}
+
+void Asembler::add_to_symbol_table(Symbol s, bool redefied) // TODO: zavrsiti ostatak
+{
+    bool dodaj = true;
+
+    for (Symbol tr : this->symbolTable)
+    {
+        if (tr.name != s.name)
+            continue;
+        else
+        {
+            if (redefied && s.isGlobal)
+                tr.isGlobal = true;
+            else
+            {
+                this->op_code = -6;
+                printError(op_code, line);
+                dodaj = false;
+                break;
+            }
+        }
+    }
+
+    if (dodaj)
+        this->symbolTable.push_back(s);
 }

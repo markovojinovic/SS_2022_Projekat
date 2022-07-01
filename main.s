@@ -1,6 +1,6 @@
 # file: main.s
 
-.extern mathAdd, mathSub, mathMul, mathDiv
+.extern mathAdd, mathSub, mathMul, mathDiv # neki komentar
 
 .global my_start
 

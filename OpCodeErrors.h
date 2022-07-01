@@ -18,6 +18,14 @@ void printError(int code, int line)
         cout << "Operation code: " << code << " Isti simbol i izvezen i uvezen!!!" << endl;
         cout << "Line: " << line << endl;
         break;
+    case -5:
+        cout << "Operation code: " << code << " Simbol je vec definisan lokalno!!!" << endl;
+        cout << "Line: " << line << endl;
+        break;
+    case -6:
+        cout << "Operation code: " << code << " Simbol je vec definisan!!!" << endl;
+        cout << "Line: " << line << endl;
+        break;
     default:
         break;
     }

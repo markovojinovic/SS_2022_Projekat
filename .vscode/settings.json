@@ -4,7 +4,8 @@
     "iosfwd": "cpp",
     "string": "cpp",
     "fstream": "cpp",
-    "ostream": "cpp"
+    "ostream": "cpp",
+    "*.tcc": "cpp"
   },
   "C_Cpp_Runner.cCompilerPath": "gcc",
   "C_Cpp_Runner.cppCompilerPath": "g++",

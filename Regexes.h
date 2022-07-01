@@ -6,6 +6,7 @@ using namespace std;
 
 regex direktives("(.)+");
 regex comments("([^#]*)#.*");
+regex filter_comment("(#)(.*)");
 regex tab("\\t");
 // regex new_line("\\n");    nije potrebno?
 
