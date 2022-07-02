@@ -7,6 +7,7 @@ Asembler::Asembler(string in_name, string out_name)
 {
     this->input_name = in_name;
     this->output_name = out_name;
+    this->currentSection = "";
 
     this->line = 0;
     this->locationCounter = 0;
@@ -50,6 +51,9 @@ int Asembler::next_instruction()
         break;
     case 3:
         extern_function(red);
+        break;
+    case 4:
+        section_function(red);
         break;
     }
 
@@ -95,7 +99,7 @@ void Asembler::extern_function(string red)
     {
         string new_symbol = m.str(0);
         new_symbol = regex_replace(new_symbol, regex(" "), "");
-        bool dalje = false;
+        bool greska = false;
 
         for (string a : this->global)
         {
@@ -114,13 +118,13 @@ void Asembler::extern_function(string red)
             else
             {
                 this->op_code = -6;
-                dalje = true;
+                greska = true;
                 printError(op_code, line);
                 break;
             }
         }
 
-        if (dalje)
+        if (greska) // TODO: potencijalno napraviti da se prekine ovde rad prevodjenja
         {
             novi = m.suffix().str();
             continue;
@@ -134,7 +138,7 @@ void Asembler::extern_function(string red)
         }
         if (!contains)
         {
-            this->add_to_symbol_table(Symbol(new_symbol, false), false);
+            this->add_to_symbol_table(Symbol(new_symbol, false, false), false);
             this->extern_.push_back(new_symbol);
         }
         novi = m.suffix().str();
@@ -167,13 +171,13 @@ void Asembler::global_function(string red)
             if (a == new_symbol)
             {
                 contains = true;
-                this->add_to_symbol_table(Symbol(new_symbol, true), contains);
+                this->add_to_symbol_table(Symbol(new_symbol, true, false), contains);
             }
         }
         if (!contains)
         {
             this->global.push_back(new_symbol);
-            this->add_to_symbol_table(Symbol(new_symbol, true), false);
+            this->add_to_symbol_table(Symbol(new_symbol, true, false), false);
         }
         novi = m.suffix().str();
     }
@@ -181,10 +185,41 @@ void Asembler::global_function(string red)
     // TODO: zavrsiti ostatak za direktivu
 }
 
+void Asembler::section_function(string red)
+{
+    if (this->currentSection != "")
+    {
+        for (Symbol s : this->symbolTable)
+        {
+            if (s.name == this->currentSection)
+            {
+                s.size = this->locationCounter;
+            }
+        }
+    }
+
+    string novi = regex_replace(red, section_directive_replace, "");
+    novi = regex_replace(novi, regex("(, )"), " ");
+    smatch m;
+    if (regex_search(novi, m, filter_from_direktives))
+    {
+        string new_symbol = m.str(0);
+        new_symbol = regex_replace(new_symbol, regex(" "), "");
+
+        add_to_symbol_table(Symbol(new_symbol, false, true), false);
+    }
+    else
+    {
+        op_code = -3;
+        printError(op_code, line);
+        return;
+    }
+}
+
 void Asembler::print_symbol_table() // TODO: zavrsiti ostatak
 {
     for (Symbol a : this->symbolTable)
-        cout << a.name << " " << a.isGlobal << endl;
+        cout << a.name << " " << a.isGlobal << " " << a.number << " " << a.seciton << " " << a.size << endl;
 }
 
 void Asembler::add_to_symbol_table(Symbol s, bool redefied) // TODO: zavrsiti ostatak
@@ -210,5 +245,14 @@ void Asembler::add_to_symbol_table(Symbol s, bool redefied) // TODO: zavrsiti os
     }
 
     if (dodaj)
+    {
+        s.number = number++;
+        if (s.isSection)
+        {
+            s.seciton = s.number;
+            this->locationCounter = 0;
+            this->currentSection = s.name;
+        }
         this->symbolTable.push_back(s);
+    }
 }

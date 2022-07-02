@@ -12,6 +12,8 @@ int main()
     as.next_instruction();
     as.next_instruction();
     as.next_instruction();
+    as.next_instruction();
+    as.next_instruction();
 
     as.print_symbol_table();
 
