@@ -55,6 +55,9 @@ int Asembler::next_instruction()
     case 4:
         section_function(red);
         break;
+    case 5:
+        word_function(red);
+        break;
     }
 
     if (rez >= 0)
@@ -143,8 +146,6 @@ void Asembler::extern_function(string red)
         }
         novi = m.suffix().str();
     }
-
-    // TODO: zavrsiti ostatak za direktivu
 }
 
 void Asembler::global_function(string red)
@@ -181,8 +182,6 @@ void Asembler::global_function(string red)
         }
         novi = m.suffix().str();
     }
-
-    // TODO: zavrsiti ostatak za direktivu
 }
 
 void Asembler::section_function(string red)
@@ -213,6 +212,38 @@ void Asembler::section_function(string red)
         op_code = -3;
         printError(op_code, line);
         return;
+    }
+}
+
+void Asembler::word_function(string red)
+{
+    string novi = regex_replace(red, word_directive_replace, "");
+    novi = regex_replace(novi, regex("(, )"), " ");
+    smatch m;
+    while (regex_search(novi, m, filter_from_word))
+    {
+        string new_symbol = m.str(0);
+        new_symbol = regex_replace(new_symbol, regex(" "), "");
+
+        if (regex_match(new_symbol, decimal_num))
+        {
+            // decimalni je broj, odma upisuj
+            // atoi f-ja za konverziju
+            cout << "Decimalni broj je" << endl;
+        }
+        else if (regex_match(new_symbol, hexa_num))
+        {
+            // hexadecimalni je broj, odma upisuj
+            // atoi f-ja za konverziju
+            cout << "Hexadecimalni broj je" << endl;
+        }
+        else if (regex_match(new_symbol, symbol))
+        {
+            cout << "Simbol je" << endl;
+            // Dodati u neku listu pa posale, lokaciju zapamtiti kao locCnt pa kad dobijemo njegovu vrednost, dodati
+        }
+
+        novi = m.suffix().str();
     }
 }
 

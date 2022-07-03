@@ -20,6 +20,7 @@ public:
     void extern_function(string);
     void global_function(string);
     void section_function(string);
+    void word_function(string);
     void print_symbol_table();
 
     class Symbol

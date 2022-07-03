@@ -10,14 +10,15 @@ regex filter_comment("(#)(.*)");
 regex tab("\\t");
 // regex new_line("\\n");    nije potrebno?
 
-string str_decimal_num = "-?[0-9]+";         // this is a decimal number (positive or negative)
-string str_hexa_num = "0x[0-9A-F]+";         // this is a hexadecimal number
-string str_symbol = "[a-zA-Z][a-zA-Z0-9_]*"; // symbol can start only with letter and can contain letters, digits and _
-string str_reg_num = "[0-7]";                // there are 8 registers: r0 - r7
+regex decimal_num("[-+]?([0-9]*\.[0-9]+|[0-9]+)");
+regex hexa_num("^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$");
+regex symbol("[a-zA-Z][a-zA-Z0-9_]*");
+regex reg_num("[0-7]");
 
 regex filter_from_direktives("[a-zA-Z][a-zA-Z0-9_]*( )*");
+regex filter_from_word(" [a-zA-Z]+| [0-9]+| (0x)[a-zA-Z0-9]+");
 
-string symbol_or_literal = str_symbol + "|" + str_decimal_num + "|" + str_hexa_num;
+// string symbol_or_literal = str_symbol + "|" + str_decimal_num + "|" + str_hexa_num;
 
 regex global_directive(".(global)(.*)");
 regex global_directive_replace(".(global)");
@@ -31,11 +32,11 @@ regex skip_directive(".(skip)(.*)");
 regex skip_directive_replace(".(skip)");
 regex end_directive(".(end)");
 
-regex label_only("^(" + str_symbol + "):$");             // nothing is after label
-regex label_with_command("^(" + str_symbol + "):(.*)$"); // something is after label
-regex symbol("^(" + str_symbol + ")$");
-regex decimal_num("^(" + str_decimal_num + ")$");
-regex hexadecimal_num("^(" + str_hexa_num + ")$");
+// regex label_only("^(" + str_symbol + "):$");             // nothing is after label
+// regex label_with_command("^(" + str_symbol + "):(.*)$"); // something is after label
+// regex symbol("^(" + str_symbol + ")$");
+// regex decimal_num("^(" + str_decimal_num + ")$");
+// regex hexadecimal_num("^(" + str_hexa_num + ")$");
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // regex rx_find_extra_spaces(" {2,}");
@@ -63,20 +64,20 @@ regex rx_one_operand_all_kind_addressing_jumps("^(call|jmp|jeq|jne|jgt) (.*)$");
 regex rx_two_operand_all_kind_addressing_load_store("^(ldr|str) (r[0-7]|psw),(.*)$");
 
 // syntax notation for operand in instruction for jumps
-regex rx_jmp_address_syntax_notation_absolute("^(" + symbol_or_literal + ")$");
-regex rx_jmp_address_syntax_notation_memdir("^\\*(" + symbol_or_literal + ")$");
-regex rx_jmp_address_syntax_notation_symbol_pc_relative("^%(" + str_symbol + ")$");
-regex rx_jmp_address_syntax_notation_regdir("^\\*(r[0-7]|psw)$");
-regex rx_jmp_address_syntax_notation_regind("^\\*\\[(r[0-7]|psw)\\]$");
-regex rx_jmp_address_syntax_notation_regind_with_displacement("^\\*\\[(r[0-7]|psw) \\+ (" + symbol_or_literal + ")\\]$");
+// regex rx_jmp_address_syntax_notation_absolute("^(" + symbol_or_literal + ")$");
+// regex rx_jmp_address_syntax_notation_memdir("^\\*(" + symbol_or_literal + ")$");
+// regex rx_jmp_address_syntax_notation_symbol_pc_relative("^%(" + str_symbol + ")$");
+// regex rx_jmp_address_syntax_notation_regdir("^\\*(r[0-7]|psw)$");
+// regex rx_jmp_address_syntax_notation_regind("^\\*\\[(r[0-7]|psw)\\]$");
+// regex rx_jmp_address_syntax_notation_regind_with_displacement("^\\*\\[(r[0-7]|psw) \\+ (" + symbol_or_literal + ")\\]$");
 
-// syntax notation for operand in instruction for load/store
-regex rx_load_store_address_syntax_notation_absolute("^\\$(" + symbol_or_literal + ")$");
-regex rx_load_store_address_syntax_notation_memdir("^(" + symbol_or_literal + ")$");
-regex rx_load_store_address_syntax_notation_pc_relative("^%(" + str_symbol + ")$");
-regex rx_load_store_address_syntax_notation_regdir("^(r[0-7]|psw)$");
-regex rx_load_store_address_syntax_notation_regind("^\\[(r[0-7]|psw)\\]$");
-regex rx_load_store_address_syntax_notation_regind_with_displacement("^\\[(r[0-7]|psw) \\+ (" + symbol_or_literal + ")\\]$");
+// // syntax notation for operand in instruction for load/store
+// regex rx_load_store_address_syntax_notation_absolute("^\\$(" + symbol_or_literal + ")$");
+// regex rx_load_store_address_syntax_notation_memdir("^(" + symbol_or_literal + ")$");
+// regex rx_load_store_address_syntax_notation_pc_relative("^%(" + str_symbol + ")$");
+// regex rx_load_store_address_syntax_notation_regdir("^(r[0-7]|psw)$");
+// regex rx_load_store_address_syntax_notation_regind("^\\[(r[0-7]|psw)\\]$");
+// regex rx_load_store_address_syntax_notation_regind_with_displacement("^\\[(r[0-7]|psw) \\+ (" + symbol_or_literal + ")\\]$");
 
 // syntax notation for operand in instruction for load or store
 

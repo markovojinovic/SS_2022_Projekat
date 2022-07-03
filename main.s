@@ -3,8 +3,8 @@
 .extern mathAdd, mathSub, mathMul, mathDiv # neki komentar
 
 .global my_start
-
-.global value0, value1, value2, value3, value4, value5, value6
+#.global value0, value1, value2, value3, value4, value5, value6
+.word a, 3, 0x21
 
 .section my_code
 my_start:
