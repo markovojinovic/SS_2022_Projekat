@@ -10,13 +10,13 @@ regex filter_comment("(#)(.*)");
 regex tab("\\t");
 // regex new_line("\\n");    nije potrebno?
 
-regex decimal_num("[-+]?([0-9]*\.[0-9]+|[0-9]+)");
-regex hexa_num("^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$");
+regex decimal_num("-?[0-9]+");
+regex hexa_num("^(0x([0-9]|[A-F])+)$");
 regex symbol("[a-zA-Z][a-zA-Z0-9_]*");
 regex reg_num("[0-7]");
 
 regex filter_from_direktives("[a-zA-Z][a-zA-Z0-9_]*( )*");
-regex filter_from_word(" [a-zA-Z]+| [0-9]+| (0x)[a-zA-Z0-9]+");
+regex filter_from_word("[a-zA-Z0-9_]+ ?,?");
 
 // string symbol_or_literal = str_symbol + "|" + str_decimal_num + "|" + str_hexa_num;
 

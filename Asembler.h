@@ -55,12 +55,15 @@ private:
     int line;
     int locationCounter;
     ifstream file;
+    FILE *output;
     string input_name;
     string output_name;
     string currentSection;
     list<string> global;
     list<string> extern_;
     list<Symbol> symbolTable;
+    list<int> backPatching;
+    const char *nonce = "0000000000000000";
 
     void add_to_symbol_table(Symbol, bool);
 };

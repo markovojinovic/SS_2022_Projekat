@@ -18,11 +18,19 @@ Asembler::Asembler(string in_name, string out_name)
         op_code = -2;
         printError(op_code, line);
     }
+
+    this->output = fopen(out_name.c_str(), "wb");
+    if (!output)
+    {
+        op_code = -2;
+        printError(op_code, line);
+    }
 }
 
 Asembler::~Asembler()
 {
     this->file.close();
+    fclose(this->output);
 }
 
 int Asembler::next_instruction()
@@ -215,7 +223,7 @@ void Asembler::section_function(string red)
     }
 }
 
-void Asembler::word_function(string red)
+void Asembler::word_function(string red) // TODO: popraviti upis u bin fajl
 {
     string novi = regex_replace(red, word_directive_replace, "");
     novi = regex_replace(novi, regex("(, )"), " ");
@@ -225,22 +233,30 @@ void Asembler::word_function(string red)
         string new_symbol = m.str(0);
         new_symbol = regex_replace(new_symbol, regex(" "), "");
 
-        if (regex_match(new_symbol, decimal_num))
+        if (new_symbol != "")
         {
-            // decimalni je broj, odma upisuj
-            // atoi f-ja za konverziju
-            cout << "Decimalni broj je" << endl;
-        }
-        else if (regex_match(new_symbol, hexa_num))
-        {
-            // hexadecimalni je broj, odma upisuj
-            // atoi f-ja za konverziju
-            cout << "Hexadecimalni broj je" << endl;
-        }
-        else if (regex_match(new_symbol, symbol))
-        {
-            cout << "Simbol je" << endl;
-            // Dodati u neku listu pa posale, lokaciju zapamtiti kao locCnt pa kad dobijemo njegovu vrednost, dodati
+            if (regex_match(new_symbol, decimal_num))
+            {
+                cout << "Decimalni broj je " << endl;
+                fwrite(new_symbol.c_str(), 2, this->locationCounter, this->output);
+                this->locationCounter += 2;
+            }
+            else if (regex_match(new_symbol, hexa_num))
+            {
+                cout << "Hexadecimalni broj je" << endl;
+                int x = std::stoul(new_symbol, nullptr, 16);
+                string upis = to_string(x);
+                fwrite(upis.c_str(), 2, this->locationCounter, this->output);
+                this->locationCounter += 2;
+            }
+            else if (regex_match(new_symbol, symbol))
+            {
+                cout << "Simbol je" << endl;
+                // Dodati u neku listu pa posale, lokaciju zapamtiti kao locCnt pa kad dobijemo njegovu vrednost, dodati
+                fwrite(this->nonce, 2, this->locationCounter, this->output);
+                this->backPatching.push_back(this->locationCounter);
+                this->locationCounter += 2;
+            }
         }
 
         novi = m.suffix().str();
@@ -287,3 +303,18 @@ void Asembler::add_to_symbol_table(Symbol s, bool redefied) // TODO: zavrsiti os
         this->symbolTable.push_back(s);
     }
 }
+
+// string nova_rec(string *red)
+// {
+//     string ret = "";
+//     for (int i = 0; i < red->length(); i++)
+//     {
+//         if ((*red)[i] != ',')
+//         {
+//             ret[i] = (*red)[i];
+//             (*red)[i] = "";
+//         }
+//     }
+
+//     return ret;
+// }

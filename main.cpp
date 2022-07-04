@@ -4,7 +4,7 @@
 using namespace std;
 int main()
 {
-    Asembler as("main.s", "neki_izlaz");
+    Asembler as("main.s", "main.o");
     as.next_instruction();
     as.next_instruction();
     as.next_instruction();
