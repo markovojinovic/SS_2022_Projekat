@@ -19,8 +19,8 @@ Asembler::Asembler(string in_name, string out_name)
         printError(op_code, line);
     }
 
-    this->output = fopen(out_name.c_str(), "wb");
-    if (!output)
+    output.open(this->output_name, ios_base::out | ios_base::binary);
+    if (!file.is_open())
     {
         op_code = -2;
         printError(op_code, line);
@@ -30,7 +30,7 @@ Asembler::Asembler(string in_name, string out_name)
 Asembler::~Asembler()
 {
     this->file.close();
-    fclose(this->output);
+    this->output.close();
 }
 
 int Asembler::next_instruction()
@@ -52,6 +52,11 @@ int Asembler::next_instruction()
             return 1;
     }
 
+    if (rez == 7)
+    {
+        return rez;
+    }
+
     switch (rez) // TODO: zavrsiti
     {
     case 2:
@@ -65,6 +70,9 @@ int Asembler::next_instruction()
         break;
     case 5:
         word_function(red);
+        break;
+    case 6:
+        skip_function(red);
         break;
     }
 
@@ -203,6 +211,10 @@ void Asembler::section_function(string red)
                 s.size = this->locationCounter;
             }
         }
+
+        this->output.write(this->for_write.data(), this->for_write.size());
+        this->for_write.clear();
+        this->locationCounter = 0;
     }
 
     string novi = regex_replace(red, section_directive_replace, "");
@@ -225,6 +237,13 @@ void Asembler::section_function(string red)
 
 void Asembler::word_function(string red) // TODO: popraviti upis u bin fajl
 {
+    if (this->currentSection == "")
+    {
+        this->op_code = -7;
+        printError(op_code, line);
+        return;
+    }
+
     string novi = regex_replace(red, word_directive_replace, "");
     novi = regex_replace(novi, regex("(, )"), " ");
     smatch m;
@@ -238,28 +257,86 @@ void Asembler::word_function(string red) // TODO: popraviti upis u bin fajl
             if (regex_match(new_symbol, decimal_num))
             {
                 cout << "Decimalni broj je " << endl;
-                fwrite(new_symbol.c_str(), 2, this->locationCounter, this->output);
+                __int16 broj = stoi(new_symbol);
+                __int8 prvi = broj / 10;
+                __int8 drugi = broj % 10;
+                this->for_write.push_back(*to_string(prvi).c_str());
+                this->for_write.push_back(*to_string(drugi).c_str());
                 this->locationCounter += 2;
             }
             else if (regex_match(new_symbol, hexa_num))
             {
                 cout << "Hexadecimalni broj je" << endl;
-                int x = std::stoul(new_symbol, nullptr, 16);
-                string upis = to_string(x);
-                fwrite(upis.c_str(), 2, this->locationCounter, this->output);
+                __int16 x = std::stoul(new_symbol, nullptr, 16);
+                __int8 prvi = x / 10;
+                __int8 drugi = x % 10;
+                this->for_write.push_back(*to_string(prvi).c_str());
+                this->for_write.push_back(*to_string(drugi).c_str());
                 this->locationCounter += 2;
             }
             else if (regex_match(new_symbol, symbol))
             {
                 cout << "Simbol je" << endl;
-                // Dodati u neku listu pa posale, lokaciju zapamtiti kao locCnt pa kad dobijemo njegovu vrednost, dodati
-                fwrite(this->nonce, 2, this->locationCounter, this->output);
-                this->backPatching.push_back(this->locationCounter);
+                __int16 val = -1;
+
+                for (auto tr : this->symbolTable)
+                    if (tr.name == new_symbol)
+                        val = tr.value;
+
+                if (val != -1)
+                {
+                    this->for_write.push_back(*to_string(val & 0xff).c_str());
+                    this->for_write.push_back(*to_string((val >> 8) & 0xff).c_str());
+                }
+                else
+                {
+                    this->for_write.push_back(this->nonce);
+                    this->for_write.push_back(this->nonce);
+                    this->backPatching[new_symbol] = this->locationCounter;
+                }
                 this->locationCounter += 2;
             }
         }
 
         novi = m.suffix().str();
+    }
+}
+
+void Asembler::skip_function(string red)
+{
+    if (this->currentSection == "")
+    {
+        this->op_code = -7;
+        printError(op_code, line);
+        return;
+    }
+
+    string novi = regex_replace(red, skip_directive_replace, "");
+    novi = regex_replace(novi, regex(" "), "");
+    smatch m;
+
+    if (regex_match(novi, hexa_num))
+    {
+        int broj = stoi(novi);
+        for (int i = 0; i < broj; i++)
+        {
+            this->for_write.push_back('0');
+            this->locationCounter++;
+        }
+    }
+    else if (regex_match(novi, decimal_num))
+    {
+        int broj = std::stoul(novi, nullptr, 16);
+        for (int i = 0; i < broj; i++)
+        {
+            this->for_write.push_back('0');
+            this->locationCounter++;
+        }
+    }
+    else
+    {
+        this->op_code = -3;
+        printError(op_code, line);
     }
 }
 
@@ -304,17 +381,9 @@ void Asembler::add_to_symbol_table(Symbol s, bool redefied) // TODO: zavrsiti os
     }
 }
 
-// string nova_rec(string *red)
-// {
-//     string ret = "";
-//     for (int i = 0; i < red->length(); i++)
-//     {
-//         if ((*red)[i] != ',')
-//         {
-//             ret[i] = (*red)[i];
-//             (*red)[i] = "";
-//         }
-//     }
-
-//     return ret;
-// }
+void Asembler::print_vector()
+{
+    this->output.write(this->for_write.data(), this->for_write.size());
+    this->for_write.clear();
+    this->locationCounter = 0;
+}

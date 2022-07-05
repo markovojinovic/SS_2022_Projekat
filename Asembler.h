@@ -5,6 +5,8 @@
 #include <iostream>
 #include <fstream>
 #include <list>
+#include <unordered_map>
+#include <vector>
 
 using namespace std;
 
@@ -21,7 +23,10 @@ public:
     void global_function(string);
     void section_function(string);
     void word_function(string);
+    void skip_function(string);
+
     void print_symbol_table();
+    void print_vector();
 
     class Symbol
     {
@@ -55,15 +60,17 @@ private:
     int line;
     int locationCounter;
     ifstream file;
-    FILE *output;
+    fstream output;
     string input_name;
     string output_name;
     string currentSection;
     list<string> global;
     list<string> extern_;
     list<Symbol> symbolTable;
-    list<int> backPatching;
-    const char *nonce = "0000000000000000";
+    vector<char> for_write;
+    unordered_map<string, int> backPatching;
+
+    char nonce = 'R';
 
     void add_to_symbol_table(Symbol, bool);
 };

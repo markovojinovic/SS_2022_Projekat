@@ -26,6 +26,10 @@ void printError(int code, int line)
         cout << "Operation code: " << code << " Simbol je vec definisan!!!" << endl;
         cout << "Line: " << line << endl;
         break;
+    case -7:
+        cout << "Operation code: " << code << " Naredba ne moze biti definisana van '.section' dela!!!" << endl;
+        cout << "Line: " << line << endl;
+        break;
     default:
         break;
     }

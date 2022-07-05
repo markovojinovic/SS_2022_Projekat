@@ -16,6 +16,8 @@ int main()
     as.next_instruction();
 
     as.print_symbol_table();
+    cout << "==================================================";
+    as.print_vector();
 
     return 0;
 }
