@@ -6,7 +6,9 @@
     "fstream": "cpp",
     "ostream": "cpp",
     "*.tcc": "cpp",
-    "unordered_map": "cpp"
+    "unordered_map": "cpp",
+    "cstring": "cpp",
+    "typeinfo": "cpp"
   },
   "C_Cpp_Runner.cCompilerPath": "gcc",
   "C_Cpp_Runner.cppCompilerPath": "g++",

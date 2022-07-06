@@ -11,12 +11,14 @@ Asembler::Asembler(string in_name, string out_name)
 
     this->line = 0;
     this->locationCounter = 0;
+    this->stopProcess = false;
 
     file.open(input_name);
     if (!file || !file.is_open())
     {
         op_code = -2;
         printError(op_code, line);
+        this->stopProcess = true;
     }
 
     output.open(this->output_name, ios_base::out | ios_base::binary);
@@ -24,6 +26,7 @@ Asembler::Asembler(string in_name, string out_name)
     {
         op_code = -2;
         printError(op_code, line);
+        this->stopProcess = true;
     }
 }
 
@@ -35,6 +38,10 @@ Asembler::~Asembler()
 
 int Asembler::next_instruction()
 {
+    if (this->stopProcess)
+    {
+        return -8;
+    }
     string red;
     if (!file.eof())
         getline(this->file, red);
@@ -82,6 +89,7 @@ int Asembler::next_instruction()
     {
         op_code = -3;
         printError(op_code, line);
+        this->stopProcess = true;
         return op_code;
     }
 }
@@ -114,7 +122,7 @@ void Asembler::extern_function(string red)
     string novi = regex_replace(red, extern_directive_replace, "");
     novi = regex_replace(novi, regex("(, )"), " ");
     smatch m;
-    while (regex_search(novi, m, filter_from_direktives))
+    while (regex_search(novi, m, filter_from_direktives) && !this->stopProcess)
     {
         string new_symbol = m.str(0);
         new_symbol = regex_replace(new_symbol, regex(" "), "");
@@ -126,6 +134,7 @@ void Asembler::extern_function(string red)
             {
                 op_code = -4;
                 printError(op_code, this->line);
+                this->stopProcess = true;
                 return;
             }
         }
@@ -138,6 +147,7 @@ void Asembler::extern_function(string red)
             {
                 this->op_code = -6;
                 greska = true;
+                this->stopProcess = true;
                 printError(op_code, line);
                 break;
             }
@@ -169,7 +179,7 @@ void Asembler::global_function(string red)
     string novi = regex_replace(red, global_directive_replace, "");
     novi = regex_replace(novi, regex("(, )"), " ");
     smatch m;
-    while (regex_search(novi, m, filter_from_direktives))
+    while (regex_search(novi, m, filter_from_direktives) && !this->stopProcess)
     {
         string new_symbol = m.str(0);
         new_symbol = regex_replace(new_symbol, regex(" "), "");
@@ -179,6 +189,7 @@ void Asembler::global_function(string red)
             {
                 op_code = -4;
                 printError(-4, this->line);
+                this->stopProcess = true;
                 return;
             }
         }
@@ -204,17 +215,15 @@ void Asembler::section_function(string red)
 {
     if (this->currentSection != "")
     {
-        for (Symbol s : this->symbolTable)
+        for (auto i = this->symbolTable.rbegin(); i != this->symbolTable.rend(); i++)
         {
-            if (s.name == this->currentSection)
+            if (i->name == this->currentSection)
             {
-                s.size = this->locationCounter;
+                i->size = this->locationCounter;
             }
         }
 
-        this->output.write(this->for_write.data(), this->for_write.size());
-        this->for_write.clear();
-        this->locationCounter = 0;
+        this->print_vector();
     }
 
     string novi = regex_replace(red, section_directive_replace, "");
@@ -231,23 +240,25 @@ void Asembler::section_function(string red)
     {
         op_code = -3;
         printError(op_code, line);
+        this->stopProcess = true;
         return;
     }
 }
 
-void Asembler::word_function(string red) // TODO: popraviti upis u bin fajl
+void Asembler::word_function(string red)
 {
     if (this->currentSection == "")
     {
         this->op_code = -7;
         printError(op_code, line);
+        this->stopProcess = true;
         return;
     }
 
     string novi = regex_replace(red, word_directive_replace, "");
     novi = regex_replace(novi, regex("(, )"), " ");
     smatch m;
-    while (regex_search(novi, m, filter_from_word))
+    while (regex_search(novi, m, filter_from_word) && !this->stopProcess)
     {
         string new_symbol = m.str(0);
         new_symbol = regex_replace(new_symbol, regex(" "), "");
@@ -256,7 +267,6 @@ void Asembler::word_function(string red) // TODO: popraviti upis u bin fajl
         {
             if (regex_match(new_symbol, decimal_num))
             {
-                cout << "Decimalni broj je " << endl;
                 __int16 broj = stoi(new_symbol);
                 __int8 prvi = broj / 10;
                 __int8 drugi = broj % 10;
@@ -266,7 +276,6 @@ void Asembler::word_function(string red) // TODO: popraviti upis u bin fajl
             }
             else if (regex_match(new_symbol, hexa_num))
             {
-                cout << "Hexadecimalni broj je" << endl;
                 __int16 x = std::stoul(new_symbol, nullptr, 16);
                 __int8 prvi = x / 10;
                 __int8 drugi = x % 10;
@@ -276,23 +285,28 @@ void Asembler::word_function(string red) // TODO: popraviti upis u bin fajl
             }
             else if (regex_match(new_symbol, symbol))
             {
-                cout << "Simbol je" << endl;
                 __int16 val = -1;
+                int num = -1;
 
                 for (auto tr : this->symbolTable)
                     if (tr.name == new_symbol)
+                    {
                         val = tr.value;
+                        num = tr.number;
+                    }
 
                 if (val != -1)
                 {
                     this->for_write.push_back(*to_string(val & 0xff).c_str());
                     this->for_write.push_back(*to_string((val >> 8) & 0xff).c_str());
+                    this->backPatching[new_symbol] = Info(this->locationCounter, 1, num);
                 }
                 else
                 {
                     this->for_write.push_back(this->nonce);
                     this->for_write.push_back(this->nonce);
-                    this->backPatching[new_symbol] = this->locationCounter;
+                    int num = this->add_to_symbol_table(Symbol(new_symbol, false, false), false);
+                    this->backPatching[new_symbol] = Info(this->locationCounter, 1, num);
                 }
                 this->locationCounter += 2;
             }
@@ -308,6 +322,7 @@ void Asembler::skip_function(string red)
     {
         this->op_code = -7;
         printError(op_code, line);
+        this->stopProcess = true;
         return;
     }
 
@@ -337,16 +352,27 @@ void Asembler::skip_function(string red)
     {
         this->op_code = -3;
         printError(op_code, line);
+        this->stopProcess = true;
     }
 }
 
-void Asembler::print_symbol_table() // TODO: zavrsiti ostatak
+void Asembler::print_symbol_table()
 {
+    cout << endl
+         << endl;
+    cout << "======================Symbol Table==============================" << endl;
+    cout << "----------------------------------------------------------------" << endl;
+    cout << "Name     Is global     Number     Section     Size      Value   " << endl;
+    cout << "----------------------------------------------------------------" << endl;
     for (Symbol a : this->symbolTable)
-        cout << a.name << " " << a.isGlobal << " " << a.number << " " << a.seciton << " " << a.size << endl;
+        cout << a.name << "      " << a.isGlobal << "            " << a.number << "          " << a.seciton
+             << "        " << a.size << "       " << a.value << endl;
+    cout << "----------------------------------------------------------------" << endl;
+    cout << endl
+         << endl;
 }
 
-void Asembler::add_to_symbol_table(Symbol s, bool redefied) // TODO: zavrsiti ostatak
+int Asembler::add_to_symbol_table(Symbol s, bool redefied) // TODO: zavrsiti ostatak
 {
     bool dodaj = true;
 
@@ -362,6 +388,7 @@ void Asembler::add_to_symbol_table(Symbol s, bool redefied) // TODO: zavrsiti os
             {
                 this->op_code = -6;
                 printError(op_code, line);
+                this->stopProcess = true;
                 dodaj = false;
                 break;
             }
@@ -379,6 +406,8 @@ void Asembler::add_to_symbol_table(Symbol s, bool redefied) // TODO: zavrsiti os
         }
         this->symbolTable.push_back(s);
     }
+
+    return s.number;
 }
 
 void Asembler::print_vector()
@@ -386,4 +415,31 @@ void Asembler::print_vector()
     this->output.write(this->for_write.data(), this->for_write.size());
     this->for_write.clear();
     this->locationCounter = 0;
+}
+
+int Asembler::start_reading()
+{
+    while (true)
+    {
+        int rez = this->next_instruction();
+        if (rez < 0)
+            break;
+        if (rez == 7)
+        {
+            for (auto i = this->symbolTable.rbegin(); i != this->symbolTable.rend(); i++)
+            {
+                if (i->name == this->currentSection)
+                {
+                    i->size = this->locationCounter;
+                }
+            }
+
+            this->print_vector();
+            break;
+        }
+    }
+    if (this->stopProcess)
+        return -1;
+    else
+        return 1;
 }

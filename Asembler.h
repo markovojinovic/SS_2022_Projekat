@@ -28,6 +28,10 @@ public:
     void print_symbol_table();
     void print_vector();
 
+    int start_reading();
+
+    // Kada se bude pisao backpatching ako se naidje na RR vrednosti u kodu tada se manja vrednost novom vrednoscu promenljive, u suprotnom ne
+
     class Symbol
     {
     public:
@@ -55,10 +59,30 @@ public:
         friend class Asembler;
     };
 
+    class Info
+    {
+    public:
+        Info() {}
+        Info(int location, int type, int num)
+        {
+            this->locationInCode = location;
+            this->typeOfDefinition = type;
+            this->numberInSybolTable = num;
+        }
+
+    private:
+        int locationInCode;
+        int typeOfDefinition;
+        int numberInSybolTable;
+
+        friend class Asembler;
+    };
+
 private:
     int op_code;
     int line;
     int locationCounter;
+    bool stopProcess;
     ifstream file;
     fstream output;
     string input_name;
@@ -68,11 +92,11 @@ private:
     list<string> extern_;
     list<Symbol> symbolTable;
     vector<char> for_write;
-    unordered_map<string, int> backPatching;
+    unordered_map<string, Info> backPatching;
 
     char nonce = 'R';
 
-    void add_to_symbol_table(Symbol, bool);
+    int add_to_symbol_table(Symbol, bool);
 };
 
 #endif
