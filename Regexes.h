@@ -4,11 +4,10 @@
 #include <string>
 using namespace std;
 
-regex direktives("(.)+");
+regex direktives(".+");
 regex comments("([^#]*)#.*");
 regex filter_comment("(#)(.*)");
 regex tab("\\t");
-// regex new_line("\\n");    nije potrebno?
 
 regex decimal_num("-?[0-9]+");
 regex hexa_num("^(0x([0-9]|[A-F])+)$");
@@ -17,8 +16,6 @@ regex reg_num("[0-7]");
 
 regex filter_from_direktives("[a-zA-Z][a-zA-Z0-9_]*( )*");
 regex filter_from_word("[a-zA-Z0-9_]+ ?,?");
-
-// string symbol_or_literal = str_symbol + "|" + str_decimal_num + "|" + str_hexa_num;
 
 regex global_directive(".(global)(.*)");
 regex global_directive_replace(".(global)");
@@ -31,6 +28,8 @@ regex word_directive_replace(".(word)");
 regex skip_directive(".(skip)(.*)");
 regex skip_directive_replace(".(skip)");
 regex end_directive(".(end)");
+
+regex halt_instr("(halt)");
 
 // regex label_only("^(" + str_symbol + "):$");             // nothing is after label
 // regex label_with_command("^(" + str_symbol + "):(.*)$"); // something is after label

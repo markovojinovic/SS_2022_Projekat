@@ -82,13 +82,16 @@ int Asembler::next_instruction()
     case 6:
         skip_function(red);
         break;
+    case 8:
+        halt_instruction();
+        break;
     }
 
     if (rez >= 0)
         return rez;
     else
     {
-        op_code = -3;
+        op_code = rez;
         printError(op_code, line);
         this->stopProcess = true;
         return op_code;
@@ -99,21 +102,20 @@ int Asembler::get_code_of_instriction(string red)
 {
     if (regex_match(red, comments))
         return 1;
-    if (regex_match(red, direktives))
-    {
-        if (regex_match(red, global_directive))
-            return 2;
-        if (regex_match(red, extern_directive))
-            return 3;
-        if (regex_match(red, section_directive))
-            return 4;
-        if (regex_match(red, word_directive))
-            return 5;
-        if (regex_match(red, skip_directive))
-            return 6;
-        if (regex_match(red, end_directive))
-            return 7;
-    }
+    if (regex_match(red, global_directive))
+        return 2;
+    if (regex_match(red, extern_directive))
+        return 3;
+    if (regex_match(red, section_directive))
+        return 4;
+    if (regex_match(red, word_directive))
+        return 5;
+    if (regex_match(red, skip_directive))
+        return 6;
+    if (regex_match(red, end_directive))
+        return 7;
+    if (regex_match(red, halt_instr))
+        return 8;
 
     return -3;
 }
@@ -154,7 +156,7 @@ void Asembler::extern_function(string red)
             }
         }
 
-        if (greska) // TODO: potencijalno napraviti da se prekine ovde rad prevodjenja
+        if (greska)
         {
             novi = m.suffix().str();
             continue;
@@ -271,8 +273,8 @@ void Asembler::word_function(string red)
                 __int16 broj = stoi(new_symbol);
                 __int8 prvi = broj / 10;
                 __int8 drugi = broj % 10;
-                this->for_write.push_back(*to_string(prvi).c_str());
                 this->for_write.push_back(*to_string(drugi).c_str());
+                this->for_write.push_back(*to_string(prvi).c_str());
                 this->locationCounter += 2;
             }
             else if (regex_match(new_symbol, hexa_num))
@@ -280,8 +282,8 @@ void Asembler::word_function(string red)
                 __int16 x = std::stoul(new_symbol, nullptr, 16);
                 __int8 prvi = x / 10;
                 __int8 drugi = x % 10;
-                this->for_write.push_back(*to_string(prvi).c_str());
                 this->for_write.push_back(*to_string(drugi).c_str());
+                this->for_write.push_back(*to_string(prvi).c_str());
                 this->locationCounter += 2;
             }
             else if (regex_match(new_symbol, symbol))
@@ -365,6 +367,12 @@ void Asembler::skip_function(string red)
     }
 }
 
+void Asembler::halt_instruction() // TODO: Videti da li jos treba nesto da se doda
+{
+    this->for_write.push_back('0');
+    this->for_write.push_back('0');
+}
+
 void Asembler::print_symbol_table()
 {
     cout << endl
@@ -387,7 +395,7 @@ void Asembler::print_symbol_table()
          << endl;
 }
 
-int Asembler::add_to_symbol_table(Symbol s, bool redefied) // TODO: zavrsiti ostatak
+int Asembler::add_to_symbol_table(Symbol s, bool redefied)
 {
     bool dodaj = true;
 

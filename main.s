@@ -1,18 +1,14 @@
 # file: main.s
 
-.extern mathAdd, mathSub, mathMul, mathDiv # neki komentar
+.section sekcija
 
-.global my_start
-.global value0, value1, value2, value3, value4, value5, value6
-.section my_code
+.word 22, g, f, 0x33
 
-.word 0x43, c, b, a, 13
-.word 0x1, d, f
+.global x,y,z
+.extern a,b,c
 
-.section neka_se
+.global g
 
-.word 0x12, cc, dd
-
-.global c, b, a
+halt
 
 .end

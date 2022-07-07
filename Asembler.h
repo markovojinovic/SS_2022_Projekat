@@ -25,6 +25,8 @@ public:
     void word_function(string);
     void skip_function(string);
 
+    void halt_instruction();
+
     void print_symbol_table();
     void print_vector();
 
