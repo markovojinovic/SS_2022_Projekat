@@ -35,12 +35,12 @@ public:
     class Symbol
     {
     public:
-        Symbol(string name, bool isGlobal, bool isSection)
+        Symbol(string name, bool isGlobal, bool isSection, int section)
         {
             this->name = name;
             this->isGlobal = isGlobal;
             this->isSection = isSection;
-            this->seciton = 0;
+            this->seciton = section;
             if (!isSection)
                 this->size = -1;
             else
@@ -82,6 +82,7 @@ private:
     int op_code;
     int line;
     int locationCounter;
+    int currentSectionNumber;
     bool stopProcess;
     ifstream file;
     fstream output;

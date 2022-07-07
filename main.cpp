@@ -19,7 +19,13 @@ int main(int argc, char *argv[])
         cout << "Nedefinisana ulazna komanda" << endl;
     }
 
-    return 0;
-}
+    // Asembler as("main.s", "main.o");
+    // if (as.start_reading() == 1)
+    // {
+    //     as.print_symbol_table();
+    // }
+    // else
+    //     cout << "Zbog greske prevodjenje prekinuto!!!" << endl;
 
-// 52:12
+    // return 0;
+}

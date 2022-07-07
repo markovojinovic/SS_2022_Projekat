@@ -13,4 +13,6 @@
 
 .word 0x12, cc, dd
 
+.global c, b, a
+
 .end

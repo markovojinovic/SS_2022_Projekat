@@ -8,6 +8,7 @@ Asembler::Asembler(string in_name, string out_name)
     this->input_name = in_name;
     this->output_name = out_name;
     this->currentSection = "";
+    this->currentSectionNumber = -1;
 
     this->line = 0;
     this->locationCounter = 0;
@@ -167,7 +168,7 @@ void Asembler::extern_function(string red)
         }
         if (!contains)
         {
-            this->add_to_symbol_table(Symbol(new_symbol, false, false), false);
+            this->add_to_symbol_table(Symbol(new_symbol, false, false, 0), false);
             this->extern_.push_back(new_symbol);
         }
         novi = m.suffix().str();
@@ -194,18 +195,18 @@ void Asembler::global_function(string red)
             }
         }
         bool contains = false;
-        for (string a : this->global)
+        for (auto a : this->symbolTable)
         {
-            if (a == new_symbol)
+            if (a.name == new_symbol)
             {
                 contains = true;
-                this->add_to_symbol_table(Symbol(new_symbol, true, false), contains);
+                this->add_to_symbol_table(Symbol(new_symbol, true, false, 0), contains);
             }
         }
         if (!contains)
         {
             this->global.push_back(new_symbol);
-            this->add_to_symbol_table(Symbol(new_symbol, true, false), false);
+            this->add_to_symbol_table(Symbol(new_symbol, true, false, 0), false);
         }
         novi = m.suffix().str();
     }
@@ -234,7 +235,7 @@ void Asembler::section_function(string red)
         string new_symbol = m.str(0);
         new_symbol = regex_replace(new_symbol, regex(" "), "");
 
-        add_to_symbol_table(Symbol(new_symbol, false, true), false);
+        add_to_symbol_table(Symbol(new_symbol, false, true, this->currentSectionNumber), false);
     }
     else
     {
@@ -291,8 +292,16 @@ void Asembler::word_function(string red)
                 for (auto tr : this->symbolTable)
                     if (tr.name == new_symbol)
                     {
-                        val = tr.value;
-                        num = tr.number;
+                        if (tr.isGlobal)
+                        {
+                            num = tr.number;
+                            val = 0;
+                        }
+                        else
+                        {
+                            num = this->currentSectionNumber;
+                            val = tr.value;
+                        }
                     }
 
                 if (val != -1)
@@ -305,7 +314,7 @@ void Asembler::word_function(string red)
                 {
                     this->for_write.push_back(this->nonce);
                     this->for_write.push_back(this->nonce);
-                    int num = this->add_to_symbol_table(Symbol(new_symbol, false, false), false);
+                    int num = this->add_to_symbol_table(Symbol(new_symbol, false, false, this->currentSectionNumber), false);
                     this->backPatching[new_symbol] = Info(this->locationCounter, 1, num);
                 }
                 this->locationCounter += 2;
@@ -360,14 +369,20 @@ void Asembler::print_symbol_table()
 {
     cout << endl
          << endl;
-    cout << "======================Symbol Table==============================" << endl;
-    cout << "----------------------------------------------------------------" << endl;
-    cout << "Name     Is global     Number     Section     Size      Value   " << endl;
-    cout << "----------------------------------------------------------------" << endl;
+    cout << "=========================================Symbol Table==============================================" << endl;
+    cout << "---------------------------------------------------------------------------------------------------" << endl;
+    cout << "Name\t\tIs global\tNumber\t\tSection\t\tSize\t\tValue\t\t" << endl;
+    cout << "---------------------------------------------------------------------------------------------------" << endl;
     for (Symbol a : this->symbolTable)
-        cout << a.name << "      " << a.isGlobal << "            " << a.number << "          " << a.seciton
-             << "        " << a.size << "       " << a.value << endl;
-    cout << "----------------------------------------------------------------" << endl;
+    {
+        if (a.name.length() < 8)
+            cout << a.name << "\t\t" << a.isGlobal << "\t\t" << a.number << "\t\t" << a.seciton
+                 << "\t\t" << a.size << "\t\t" << a.value << endl;
+        else
+            cout << a.name << "\t" << a.isGlobal << "\t\t" << a.number << "\t\t" << a.seciton
+                 << "\t\t" << a.size << "\t\t" << a.value << endl;
+    }
+    cout << "---------------------------------------------------------------------------------------------------" << endl;
     cout << endl
          << endl;
 }
@@ -376,14 +391,18 @@ int Asembler::add_to_symbol_table(Symbol s, bool redefied) // TODO: zavrsiti ost
 {
     bool dodaj = true;
 
-    for (Symbol tr : this->symbolTable)
+    for (auto tr = this->symbolTable.rbegin(); tr != this->symbolTable.rend(); tr++)
     {
-        if (tr.name != s.name)
+        if (tr->name != s.name)
             continue;
         else
         {
             if (redefied && s.isGlobal)
-                tr.isGlobal = true;
+            {
+                tr->isGlobal = true;
+                dodaj = false;
+                break;
+            }
             else
             {
                 this->op_code = -6;
@@ -403,6 +422,7 @@ int Asembler::add_to_symbol_table(Symbol s, bool redefied) // TODO: zavrsiti ost
             s.seciton = s.number;
             this->locationCounter = 0;
             this->currentSection = s.name;
+            this->currentSectionNumber = s.number;
         }
         this->symbolTable.push_back(s);
     }
