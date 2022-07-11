@@ -26,6 +26,17 @@ public:
     void skip_function(string);
 
     void halt_instruction();
+    void add_instruction(string);
+    void sub_instruction(string);
+    void mul_instruction(string);
+    void div_instruction(string);
+    void cmp_instruction(string);
+    void and_instruction(string);
+    void or_instruction(string);
+    void xor_instruction(string);
+    void test_instruction(string);
+    void shl_instruction(string);
+    void shr_instruction(string);
 
     void print_symbol_table();
     void print_vector();

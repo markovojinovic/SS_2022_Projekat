@@ -8,7 +8,9 @@
     "*.tcc": "cpp",
     "unordered_map": "cpp",
     "cstring": "cpp",
-    "typeinfo": "cpp"
+    "typeinfo": "cpp",
+    "deque": "cpp",
+    "vector": "cpp"
   },
   "C_Cpp_Runner.cCompilerPath": "gcc",
   "C_Cpp_Runner.cppCompilerPath": "g++",

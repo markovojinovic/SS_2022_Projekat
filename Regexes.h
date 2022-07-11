@@ -16,6 +16,7 @@ regex reg_num("[0-7]");
 
 regex filter_from_direktives("[a-zA-Z][a-zA-Z0-9_]*( )*");
 regex filter_from_word("[a-zA-Z0-9_]+ ?,?");
+regex filter_from_add("[a-zA-Z]"); // Podesiti da moze da filtrira samo R ili r, a da u suprotnom prijavljuje gresku
 
 regex global_directive(".(global)(.*)");
 regex global_directive_replace(".(global)");
@@ -30,6 +31,28 @@ regex skip_directive_replace(".(skip)");
 regex end_directive(".(end)");
 
 regex halt_instr("(halt)");
+regex add_instr("(add)(.*)");
+regex add_instr_filter("(add)");
+regex sub_instr("(sub)(.*)");
+regex sub_instr_filter("(sub)");
+regex mul_instr("(mul)(.*)");
+regex mul_instr_filter("(mul)");
+regex div_instr("(div)(.*)");
+regex div_instr_filter("(div)");
+regex cmp_instr("(cmp)(.*)");
+regex cmp_instr_filter("(cmp)");
+regex and_instr("(and)(.*)");
+regex and_instr_filter("(and)");
+regex or_instr("(or)(.*)");
+regex or_instr_filter("(or)");
+regex xor_instr("(xor)(.*)");
+regex xor_instr_filter("(xor)");
+regex test_instr("(test)(.*)");
+regex test_instr_filter("(test)");
+regex shl_instr("(shl)(.*)");
+regex shl_instr_filter("(shl)");
+regex shr_instr("(shr)(.*)");
+regex shr_instr_filter("(shr)");
 
 // regex label_only("^(" + str_symbol + "):$");             // nothing is after label
 // regex label_with_command("^(" + str_symbol + "):(.*)$"); // something is after label
