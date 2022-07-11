@@ -16,7 +16,8 @@ regex reg_num("[0-7]");
 
 regex filter_from_direktives("[a-zA-Z][a-zA-Z0-9_]*( )*");
 regex filter_from_word("[a-zA-Z0-9_]+ ?,?");
-regex filter_from_add("[a-zA-Z]"); // Podesiti da moze da filtrira samo R ili r, a da u suprotnom prijavljuje gresku
+regex filter_from_instruction("(r|R)[0-9]+ ?,?");
+regex filter_from_add("[a-zA-Z]");
 
 regex global_directive(".(global)(.*)");
 regex global_directive_replace(".(global)");

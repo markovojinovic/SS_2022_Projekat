@@ -34,6 +34,14 @@ void printError(int code, int line)
         cout << "Operation code: " << code << " = Naredba ne moze pocinjati tackom, osim ako nije direktiva!!!" << endl;
         cout << "Line: " << line << endl;
         break;
+    case -10:
+        cout << "Operation code: " << code << " = Sintaksna greska asemblerske naredbe!!!" << endl;
+        cout << "Line: " << line << endl;
+        break;
+    case -11:
+        cout << "Operation code: " << code << " = Registar nije u opsegu od 0 do 7!!!" << endl;
+        cout << "Line: " << line << endl;
+        break;
     default:
         break;
     }

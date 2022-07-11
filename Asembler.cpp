@@ -436,7 +436,7 @@ void Asembler::add_instruction(string red)
 
     char dest, src;
 
-    if (regex_search(novi, m, filter_from_word))
+    if (regex_search(novi, m, filter_from_instruction))
     {
         string new_symbol = m.str(0);
         new_symbol = regex_replace(new_symbol, regex(" "), "");
@@ -447,14 +447,14 @@ void Asembler::add_instruction(string red)
         __int8 broj = stoi(new_symbol);
         if (broj > 7)
         {
-            op_code = -3;
+            op_code = -11;
             printError(op_code, line);
             this->stopProcess = true;
             return;
         }
         dest = *to_string(broj).c_str();
 
-        if (regex_search(novi, m, filter_from_word))
+        if (regex_search(novi, m, filter_from_instruction))
         {
             new_symbol = m.str(0);
             new_symbol = regex_replace(new_symbol, regex(" "), "");
@@ -463,7 +463,7 @@ void Asembler::add_instruction(string red)
             __int8 broj = stoi(new_symbol);
             if (broj > 7)
             {
-                op_code = -3;
+                op_code = -11;
                 printError(op_code, line);
                 this->stopProcess = true;
                 return;
@@ -477,7 +477,7 @@ void Asembler::add_instruction(string red)
         }
         else
         {
-            op_code = -3;
+            op_code = -10;
             printError(op_code, line);
             this->stopProcess = true;
             return;
@@ -485,7 +485,7 @@ void Asembler::add_instruction(string red)
     }
     else
     {
-        op_code = -3;
+        op_code = -10;
         printError(op_code, line);
         this->stopProcess = true;
         return;
@@ -500,7 +500,7 @@ void Asembler::sub_instruction(string red)
 
     char dest, src;
 
-    if (regex_search(novi, m, filter_from_word))
+    if (regex_search(novi, m, filter_from_instruction))
     {
         string new_symbol = m.str(0);
         new_symbol = regex_replace(new_symbol, regex(" "), "");
@@ -511,14 +511,14 @@ void Asembler::sub_instruction(string red)
         __int8 broj = stoi(new_symbol);
         if (broj > 7)
         {
-            op_code = -3;
+            op_code = -11;
             printError(op_code, line);
             this->stopProcess = true;
             return;
         }
         dest = *to_string(broj).c_str();
 
-        if (regex_search(novi, m, filter_from_word))
+        if (regex_search(novi, m, filter_from_instruction))
         {
             new_symbol = m.str(0);
             new_symbol = regex_replace(new_symbol, regex(" "), "");
@@ -527,7 +527,7 @@ void Asembler::sub_instruction(string red)
             __int8 broj = stoi(new_symbol);
             if (broj > 7)
             {
-                op_code = -3;
+                op_code = -11;
                 printError(op_code, line);
                 this->stopProcess = true;
                 return;
@@ -541,7 +541,7 @@ void Asembler::sub_instruction(string red)
         }
         else
         {
-            op_code = -3;
+            op_code = -10;
             printError(op_code, line);
             this->stopProcess = true;
             return;
@@ -549,7 +549,7 @@ void Asembler::sub_instruction(string red)
     }
     else
     {
-        op_code = -3;
+        op_code = -10;
         printError(op_code, line);
         this->stopProcess = true;
         return;
@@ -564,7 +564,7 @@ void Asembler::mul_instruction(string red)
 
     char dest, src;
 
-    if (regex_search(novi, m, filter_from_word))
+    if (regex_search(novi, m, filter_from_instruction))
     {
         string new_symbol = m.str(0);
         new_symbol = regex_replace(new_symbol, regex(" "), "");
@@ -575,14 +575,14 @@ void Asembler::mul_instruction(string red)
         __int8 broj = stoi(new_symbol);
         if (broj > 7)
         {
-            op_code = -3;
+            op_code = -11;
             printError(op_code, line);
             this->stopProcess = true;
             return;
         }
         dest = *to_string(broj).c_str();
 
-        if (regex_search(novi, m, filter_from_word))
+        if (regex_search(novi, m, filter_from_instruction))
         {
             new_symbol = m.str(0);
             new_symbol = regex_replace(new_symbol, regex(" "), "");
@@ -591,7 +591,7 @@ void Asembler::mul_instruction(string red)
             __int8 broj = stoi(new_symbol);
             if (broj > 7)
             {
-                op_code = -3;
+                op_code = -11;
                 printError(op_code, line);
                 this->stopProcess = true;
                 return;
@@ -605,7 +605,7 @@ void Asembler::mul_instruction(string red)
         }
         else
         {
-            op_code = -3;
+            op_code = -10;
             printError(op_code, line);
             this->stopProcess = true;
             return;
@@ -613,7 +613,7 @@ void Asembler::mul_instruction(string red)
     }
     else
     {
-        op_code = -3;
+        op_code = -10;
         printError(op_code, line);
         this->stopProcess = true;
         return;
@@ -628,7 +628,7 @@ void Asembler::div_instruction(string red)
 
     char dest, src;
 
-    if (regex_search(novi, m, filter_from_word))
+    if (regex_search(novi, m, filter_from_instruction))
     {
         string new_symbol = m.str(0);
         new_symbol = regex_replace(new_symbol, regex(" "), "");
@@ -639,14 +639,14 @@ void Asembler::div_instruction(string red)
         __int8 broj = stoi(new_symbol);
         if (broj > 7)
         {
-            op_code = -3;
+            op_code = -11;
             printError(op_code, line);
             this->stopProcess = true;
             return;
         }
         dest = *to_string(broj).c_str();
 
-        if (regex_search(novi, m, filter_from_word))
+        if (regex_search(novi, m, filter_from_instruction))
         {
             new_symbol = m.str(0);
             new_symbol = regex_replace(new_symbol, regex(" "), "");
@@ -655,7 +655,7 @@ void Asembler::div_instruction(string red)
             __int8 broj = stoi(new_symbol);
             if (broj > 7)
             {
-                op_code = -3;
+                op_code = -11;
                 printError(op_code, line);
                 this->stopProcess = true;
                 return;
@@ -669,7 +669,7 @@ void Asembler::div_instruction(string red)
         }
         else
         {
-            op_code = -3;
+            op_code = -10;
             printError(op_code, line);
             this->stopProcess = true;
             return;
@@ -677,7 +677,7 @@ void Asembler::div_instruction(string red)
     }
     else
     {
-        op_code = -3;
+        op_code = -10;
         printError(op_code, line);
         this->stopProcess = true;
         return;
@@ -692,7 +692,7 @@ void Asembler::cmp_instruction(string red)
 
     char dest, src;
 
-    if (regex_search(novi, m, filter_from_word))
+    if (regex_search(novi, m, filter_from_instruction))
     {
         string new_symbol = m.str(0);
         new_symbol = regex_replace(new_symbol, regex(" "), "");
@@ -703,14 +703,14 @@ void Asembler::cmp_instruction(string red)
         __int8 broj = stoi(new_symbol);
         if (broj > 7)
         {
-            op_code = -3;
+            op_code = -11;
             printError(op_code, line);
             this->stopProcess = true;
             return;
         }
         dest = *to_string(broj).c_str();
 
-        if (regex_search(novi, m, filter_from_word))
+        if (regex_search(novi, m, filter_from_instruction))
         {
             new_symbol = m.str(0);
             new_symbol = regex_replace(new_symbol, regex(" "), "");
@@ -719,7 +719,7 @@ void Asembler::cmp_instruction(string red)
             __int8 broj = stoi(new_symbol);
             if (broj > 7)
             {
-                op_code = -3;
+                op_code = -11;
                 printError(op_code, line);
                 this->stopProcess = true;
                 return;
@@ -733,7 +733,7 @@ void Asembler::cmp_instruction(string red)
         }
         else
         {
-            op_code = -3;
+            op_code = -10;
             printError(op_code, line);
             this->stopProcess = true;
             return;
@@ -741,7 +741,7 @@ void Asembler::cmp_instruction(string red)
     }
     else
     {
-        op_code = -3;
+        op_code = -10;
         printError(op_code, line);
         this->stopProcess = true;
         return;
@@ -756,7 +756,7 @@ void Asembler::and_instruction(string red)
 
     char dest, src;
 
-    if (regex_search(novi, m, filter_from_word))
+    if (regex_search(novi, m, filter_from_instruction))
     {
         string new_symbol = m.str(0);
         new_symbol = regex_replace(new_symbol, regex(" "), "");
@@ -767,14 +767,14 @@ void Asembler::and_instruction(string red)
         __int8 broj = stoi(new_symbol);
         if (broj > 7)
         {
-            op_code = -3;
+            op_code = -11;
             printError(op_code, line);
             this->stopProcess = true;
             return;
         }
         dest = *to_string(broj).c_str();
 
-        if (regex_search(novi, m, filter_from_word))
+        if (regex_search(novi, m, filter_from_instruction))
         {
             new_symbol = m.str(0);
             new_symbol = regex_replace(new_symbol, regex(" "), "");
@@ -783,7 +783,7 @@ void Asembler::and_instruction(string red)
             __int8 broj = stoi(new_symbol);
             if (broj > 7)
             {
-                op_code = -3;
+                op_code = -11;
                 printError(op_code, line);
                 this->stopProcess = true;
                 return;
@@ -797,7 +797,7 @@ void Asembler::and_instruction(string red)
         }
         else
         {
-            op_code = -3;
+            op_code = -10;
             printError(op_code, line);
             this->stopProcess = true;
             return;
@@ -805,7 +805,7 @@ void Asembler::and_instruction(string red)
     }
     else
     {
-        op_code = -3;
+        op_code = -10;
         printError(op_code, line);
         this->stopProcess = true;
         return;
@@ -820,7 +820,7 @@ void Asembler::or_instruction(string red)
 
     char dest, src;
 
-    if (regex_search(novi, m, filter_from_word))
+    if (regex_search(novi, m, filter_from_instruction))
     {
         string new_symbol = m.str(0);
         new_symbol = regex_replace(new_symbol, regex(" "), "");
@@ -831,14 +831,14 @@ void Asembler::or_instruction(string red)
         __int8 broj = stoi(new_symbol);
         if (broj > 7)
         {
-            op_code = -3;
+            op_code = -11;
             printError(op_code, line);
             this->stopProcess = true;
             return;
         }
         dest = *to_string(broj).c_str();
 
-        if (regex_search(novi, m, filter_from_word))
+        if (regex_search(novi, m, filter_from_instruction))
         {
             new_symbol = m.str(0);
             new_symbol = regex_replace(new_symbol, regex(" "), "");
@@ -847,7 +847,7 @@ void Asembler::or_instruction(string red)
             __int8 broj = stoi(new_symbol);
             if (broj > 7)
             {
-                op_code = -3;
+                op_code = -11;
                 printError(op_code, line);
                 this->stopProcess = true;
                 return;
@@ -861,7 +861,7 @@ void Asembler::or_instruction(string red)
         }
         else
         {
-            op_code = -3;
+            op_code = -10;
             printError(op_code, line);
             this->stopProcess = true;
             return;
@@ -869,7 +869,7 @@ void Asembler::or_instruction(string red)
     }
     else
     {
-        op_code = -3;
+        op_code = -10;
         printError(op_code, line);
         this->stopProcess = true;
         return;
@@ -884,7 +884,7 @@ void Asembler::xor_instruction(string red)
 
     char dest, src;
 
-    if (regex_search(novi, m, filter_from_word))
+    if (regex_search(novi, m, filter_from_instruction))
     {
         string new_symbol = m.str(0);
         new_symbol = regex_replace(new_symbol, regex(" "), "");
@@ -895,14 +895,14 @@ void Asembler::xor_instruction(string red)
         __int8 broj = stoi(new_symbol);
         if (broj > 7)
         {
-            op_code = -3;
+            op_code = -11;
             printError(op_code, line);
             this->stopProcess = true;
             return;
         }
         dest = *to_string(broj).c_str();
 
-        if (regex_search(novi, m, filter_from_word))
+        if (regex_search(novi, m, filter_from_instruction))
         {
             new_symbol = m.str(0);
             new_symbol = regex_replace(new_symbol, regex(" "), "");
@@ -911,7 +911,7 @@ void Asembler::xor_instruction(string red)
             __int8 broj = stoi(new_symbol);
             if (broj > 7)
             {
-                op_code = -3;
+                op_code = -11;
                 printError(op_code, line);
                 this->stopProcess = true;
                 return;
@@ -925,7 +925,7 @@ void Asembler::xor_instruction(string red)
         }
         else
         {
-            op_code = -3;
+            op_code = -10;
             printError(op_code, line);
             this->stopProcess = true;
             return;
@@ -933,7 +933,7 @@ void Asembler::xor_instruction(string red)
     }
     else
     {
-        op_code = -3;
+        op_code = -10;
         printError(op_code, line);
         this->stopProcess = true;
         return;
@@ -948,7 +948,7 @@ void Asembler::test_instruction(string red)
 
     char dest, src;
 
-    if (regex_search(novi, m, filter_from_word))
+    if (regex_search(novi, m, filter_from_instruction))
     {
         string new_symbol = m.str(0);
         new_symbol = regex_replace(new_symbol, regex(" "), "");
@@ -959,14 +959,14 @@ void Asembler::test_instruction(string red)
         __int8 broj = stoi(new_symbol);
         if (broj > 7)
         {
-            op_code = -3;
+            op_code = -11;
             printError(op_code, line);
             this->stopProcess = true;
             return;
         }
         dest = *to_string(broj).c_str();
 
-        if (regex_search(novi, m, filter_from_word))
+        if (regex_search(novi, m, filter_from_instruction))
         {
             new_symbol = m.str(0);
             new_symbol = regex_replace(new_symbol, regex(" "), "");
@@ -975,7 +975,7 @@ void Asembler::test_instruction(string red)
             __int8 broj = stoi(new_symbol);
             if (broj > 7)
             {
-                op_code = -3;
+                op_code = -11;
                 printError(op_code, line);
                 this->stopProcess = true;
                 return;
@@ -989,7 +989,7 @@ void Asembler::test_instruction(string red)
         }
         else
         {
-            op_code = -3;
+            op_code = -10;
             printError(op_code, line);
             this->stopProcess = true;
             return;
@@ -997,7 +997,7 @@ void Asembler::test_instruction(string red)
     }
     else
     {
-        op_code = -3;
+        op_code = -10;
         printError(op_code, line);
         this->stopProcess = true;
         return;
@@ -1012,7 +1012,7 @@ void Asembler::shl_instruction(string red)
 
     char dest, src;
 
-    if (regex_search(novi, m, filter_from_word))
+    if (regex_search(novi, m, filter_from_instruction))
     {
         string new_symbol = m.str(0);
         new_symbol = regex_replace(new_symbol, regex(" "), "");
@@ -1023,14 +1023,14 @@ void Asembler::shl_instruction(string red)
         __int8 broj = stoi(new_symbol);
         if (broj > 7)
         {
-            op_code = -3;
+            op_code = -11;
             printError(op_code, line);
             this->stopProcess = true;
             return;
         }
         dest = *to_string(broj).c_str();
 
-        if (regex_search(novi, m, filter_from_word))
+        if (regex_search(novi, m, filter_from_instruction))
         {
             new_symbol = m.str(0);
             new_symbol = regex_replace(new_symbol, regex(" "), "");
@@ -1039,7 +1039,7 @@ void Asembler::shl_instruction(string red)
             __int8 broj = stoi(new_symbol);
             if (broj > 7)
             {
-                op_code = -3;
+                op_code = -11;
                 printError(op_code, line);
                 this->stopProcess = true;
                 return;
@@ -1053,7 +1053,7 @@ void Asembler::shl_instruction(string red)
         }
         else
         {
-            op_code = -3;
+            op_code = -10;
             printError(op_code, line);
             this->stopProcess = true;
             return;
@@ -1061,7 +1061,7 @@ void Asembler::shl_instruction(string red)
     }
     else
     {
-        op_code = -3;
+        op_code = -10;
         printError(op_code, line);
         this->stopProcess = true;
         return;
@@ -1076,7 +1076,7 @@ void Asembler::shr_instruction(string red)
 
     char dest, src;
 
-    if (regex_search(novi, m, filter_from_word))
+    if (regex_search(novi, m, filter_from_instruction))
     {
         string new_symbol = m.str(0);
         new_symbol = regex_replace(new_symbol, regex(" "), "");
@@ -1087,14 +1087,14 @@ void Asembler::shr_instruction(string red)
         __int8 broj = stoi(new_symbol);
         if (broj > 7)
         {
-            op_code = -3;
+            op_code = -11;
             printError(op_code, line);
             this->stopProcess = true;
             return;
         }
         dest = *to_string(broj).c_str();
 
-        if (regex_search(novi, m, filter_from_word))
+        if (regex_search(novi, m, filter_from_instruction))
         {
             new_symbol = m.str(0);
             new_symbol = regex_replace(new_symbol, regex(" "), "");
@@ -1103,7 +1103,7 @@ void Asembler::shr_instruction(string red)
             __int8 broj = stoi(new_symbol);
             if (broj > 7)
             {
-                op_code = -3;
+                op_code = -11;
                 printError(op_code, line);
                 this->stopProcess = true;
                 return;
@@ -1117,7 +1117,7 @@ void Asembler::shr_instruction(string red)
         }
         else
         {
-            op_code = -3;
+            op_code = -10;
             printError(op_code, line);
             this->stopProcess = true;
             return;
@@ -1125,7 +1125,7 @@ void Asembler::shr_instruction(string red)
     }
     else
     {
-        op_code = -3;
+        op_code = -10;
         printError(op_code, line);
         this->stopProcess = true;
         return;
