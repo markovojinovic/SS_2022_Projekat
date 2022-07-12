@@ -205,6 +205,15 @@ void Asembler::extern_function(string red)
     string novi = regex_replace(red, extern_directive_replace, "");
     novi = regex_replace(novi, regex("(, )"), " ");
     smatch m;
+
+    if (novi == "")
+    {
+        op_code = -3;
+        printError(op_code, this->line);
+        this->stopProcess = true;
+        return;
+    }
+
     while (regex_search(novi, m, filter_from_direktives) && !this->stopProcess)
     {
         string new_symbol = m.str(0);
@@ -262,6 +271,15 @@ void Asembler::global_function(string red)
     string novi = regex_replace(red, global_directive_replace, "");
     novi = regex_replace(novi, regex("(, )"), " ");
     smatch m;
+
+    if (novi == "")
+    {
+        op_code = -3;
+        printError(op_code, this->line);
+        this->stopProcess = true;
+        return;
+    }
+
     while (regex_search(novi, m, filter_from_direktives) && !this->stopProcess)
     {
         string new_symbol = m.str(0);
@@ -312,6 +330,15 @@ void Asembler::section_function(string red)
     string novi = regex_replace(red, section_directive_replace, "");
     novi = regex_replace(novi, regex("(, )"), " ");
     smatch m;
+
+    if (novi == "")
+    {
+        op_code = -3;
+        printError(op_code, this->line);
+        this->stopProcess = true;
+        return;
+    }
+
     if (regex_search(novi, m, filter_from_direktives))
     {
         string new_symbol = m.str(0);
@@ -341,6 +368,15 @@ void Asembler::word_function(string red)
     string novi = regex_replace(red, word_directive_replace, "");
     novi = regex_replace(novi, regex("(, )"), " ");
     smatch m;
+
+    if (novi == "" || novi == " ")
+    {
+        op_code = -3;
+        printError(op_code, this->line);
+        this->stopProcess = true;
+        return;
+    }
+
     while (regex_search(novi, m, filter_from_word) && !this->stopProcess)
     {
         string new_symbol = m.str(0);
@@ -420,6 +456,14 @@ void Asembler::skip_function(string red)
     string novi = regex_replace(red, skip_directive_replace, "");
     novi = regex_replace(novi, regex(" "), "");
     smatch m;
+
+    if (novi == "")
+    {
+        op_code = -3;
+        printError(op_code, this->line);
+        this->stopProcess = true;
+        return;
+    }
 
     if (regex_match(novi, hexa_num))
     {
