@@ -54,6 +54,14 @@ regex shl_instr("(shl)(.*)");
 regex shl_instr_filter("(shl)");
 regex shr_instr("(shr)(.*)");
 regex shr_instr_filter("(shr)");
+regex not_instr("(not)(.*)");
+regex not_instr_filter("(not)");
+regex ret_instr("(ret)");
+regex iret_instr("(iret)");
+regex int_instr("(int)(.*)");
+regex int_instr_filter("(int)");
+regex xchg_instr("(xchg)(.*)");
+regex xchg_instr_filter("(xchg)");
 
 // regex label_only("^(" + str_symbol + "):$");             // nothing is after label
 // regex label_with_command("^(" + str_symbol + "):(.*)$"); // something is after label

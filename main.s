@@ -9,8 +9,7 @@
 
 .global g
 
-shl r4, r5
-shr r4, r5
+xchg r4, r5
 
 halt
 

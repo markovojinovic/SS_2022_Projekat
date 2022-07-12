@@ -118,6 +118,21 @@ int Asembler::next_instruction()
     case 19:
         reg_instruction(9, 1, red);
         break;
+    case 20:
+        ret_instruction();
+        break;
+    case 21:
+        iret_instruction();
+        break;
+    case 22:
+        reg_instruction(8, 0, red);
+        break;
+    case 23:
+        reg_instruction(1, 0, red);
+        break;
+    case 24:
+        reg_instruction(6, 0, red);
+        break;
     }
 
     if (rez >= 0)
@@ -171,6 +186,16 @@ int Asembler::get_code_of_instriction(string red)
         return 18;
     if (regex_match(red, shr_instr))
         return 19;
+    if (regex_match(red, ret_instr))
+        return 20;
+    if (regex_match(red, iret_instr))
+        return 21;
+    if (regex_match(red, not_instr))
+        return 22;
+    if (regex_match(red, int_instr))
+        return 23;
+    if (regex_match(red, xchg_instr))
+        return 24;
 
     return -3;
 }
@@ -428,7 +453,19 @@ void Asembler::halt_instruction() // TODO: Videti da li jos treba nesto da se do
     this->for_write.push_back('0');
 }
 
-void Asembler::parse_reg_instruction(string red, int &destination, int &source)
+void Asembler::iret_instruction()
+{
+    this->for_write.push_back('0');
+    this->for_write.push_back('2');
+}
+
+void Asembler::ret_instruction()
+{
+    this->for_write.push_back('0');
+    this->for_write.push_back('4');
+}
+
+void Asembler::parse_reg_instruction(string red, int &destination, int &source, bool one_read)
 {
     int dest, src;
     smatch m;
@@ -450,31 +487,36 @@ void Asembler::parse_reg_instruction(string red, int &destination, int &source)
             return;
         }
 
-        if (regex_search(red, m, filter_from_instruction))
+        if (!one_read)
         {
-            new_symbol = m.str(0);
-            new_symbol = regex_replace(new_symbol, regex(" "), "");
-            new_symbol = regex_replace(new_symbol, filter_from_add, "");
-
-            src = stoi(new_symbol);
-            if (src > 7)
+            if (regex_search(red, m, filter_from_instruction))
             {
-                op_code = -11;
+                new_symbol = m.str(0);
+                new_symbol = regex_replace(new_symbol, regex(" "), "");
+                new_symbol = regex_replace(new_symbol, filter_from_add, "");
+
+                src = stoi(new_symbol);
+                if (src > 7)
+                {
+                    op_code = -11;
+                    printError(op_code, line);
+                    this->stopProcess = true;
+                    return;
+                }
+
+                destination = dest;
+                source = src;
+            }
+            else
+            {
+                op_code = -10;
                 printError(op_code, line);
                 this->stopProcess = true;
                 return;
             }
-
-            destination = dest;
-            source = src;
         }
         else
-        {
-            op_code = -10;
-            printError(op_code, line);
-            this->stopProcess = true;
-            return;
-        }
+            destination = dest;
     }
     else
     {
@@ -488,6 +530,10 @@ void Asembler::parse_reg_instruction(string red, int &destination, int &source)
 void Asembler::reg_instruction(int fa, int sa, string red)
 {
     regex filter;
+    if (fa == 6 && sa == 0)
+    {
+        filter = xchg_instr_filter;
+    }
     if (fa == 7)
     {
         switch (sa)
@@ -515,9 +561,9 @@ void Asembler::reg_instruction(int fa, int sa, string red)
     {
         switch (sa)
         {
-        // case 0:
-        //     filter = add_instr_filter;
-        //     break;
+        case 0:
+            filter = not_instr_filter;
+            break;
         case 1:
             filter = and_instr_filter;
             break;
@@ -548,12 +594,16 @@ void Asembler::reg_instruction(int fa, int sa, string red)
             break;
         }
     }
+    else if (fa == 1 && sa == 0)
+        filter = int_instr_filter;
 
     string novi = regex_replace(red, filter, "");
     novi = regex_replace(novi, regex(" "), "");
 
     int dest = 0, src = 0;
-    this->parse_reg_instruction(novi, dest, src);
+    bool flag;
+    (fa == 8 || fa == 1) &&sa == 0 ? flag = true : flag = false;
+    this->parse_reg_instruction(novi, dest, src, flag);
 
     if (this->stopProcess)
     {
@@ -562,7 +612,12 @@ void Asembler::reg_instruction(int fa, int sa, string red)
 
     this->for_write.push_back(*to_string(sa).c_str());
     this->for_write.push_back(*to_string(fa).c_str());
-    this->for_write.push_back(*to_string(src).c_str());
+    if (!flag)
+        this->for_write.push_back(*to_string(src).c_str());
+    else if (fa != 1)
+        this->for_write.push_back('0');
+    else
+        this->for_write.push_back('F');
     this->for_write.push_back(*to_string(dest).c_str());
 }
 
@@ -574,13 +629,14 @@ void Asembler::print_symbol_table()
     cout << "---------------------------------------------------------------------------------------------------" << endl;
     cout << "Name\t\tIs global\tNumber\t\tSection\t\tSize\t\tValue\t\t" << endl;
     cout << "---------------------------------------------------------------------------------------------------" << endl;
+    cout << "UND\t\t0\t\t0\t\t0\t\t0\t\t0\t\t" << endl;
     for (Symbol a : this->symbolTable)
     {
         if (a.name.length() < 8)
-            cout << a.name << "\t\t" << a.isGlobal << "\t\t" << a.number << "\t\t" << a.seciton
+            cout << a.name << "\t\t" << to_string(a.isGlobal) << "\t\t" << a.number << "\t\t" << a.seciton
                  << "\t\t" << a.size << "\t\t" << a.value << endl;
         else
-            cout << a.name << "\t" << a.isGlobal << "\t\t" << a.number << "\t\t" << a.seciton
+            cout << a.name << "\t" << to_string(a.isGlobal) << "\t\t" << a.number << "\t\t" << a.seciton
                  << "\t\t" << a.size << "\t\t" << a.value << endl;
     }
     cout << "---------------------------------------------------------------------------------------------------" << endl;

@@ -10,7 +10,7 @@
 
 using namespace std;
 
-static int number = 0;
+static int number = 1;
 
 class Asembler
 {
@@ -26,6 +26,8 @@ public:
     void skip_function(string);
 
     void halt_instruction();
+    void iret_instruction();
+    void ret_instruction();
 
     void reg_instruction(int, int, string);
 
@@ -102,7 +104,7 @@ private:
     char nonce = 'R';
 
     int add_to_symbol_table(Symbol, bool);
-    void parse_reg_instruction(string, int &, int &);
+    void parse_reg_instruction(string, int &, int &, bool);
 };
 
 #endif
