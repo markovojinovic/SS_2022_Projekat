@@ -28,6 +28,7 @@ public:
     void halt_instruction();
     void iret_instruction();
     void ret_instruction();
+    void call_instruction(string);
 
     void reg_instruction(int, int, string);
 

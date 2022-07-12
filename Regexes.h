@@ -62,6 +62,17 @@ regex int_instr("(int)(.*)");
 regex int_instr_filter("(int)");
 regex xchg_instr("(xchg)(.*)");
 regex xchg_instr_filter("(xchg)");
+regex call_instr("(call)(.*)");
+regex call_instr_filter("(call)");
+
+regex dolar("\\$[0-9]");
+regex dolar_filter("\\$");
+regex clasic_literal("[0-9]+");
+regex clasic_symbol("[a-zA-Z0-9_]+");
+// regex percent("(%)(.*)");
+// regex register_adressing("(r|R)[0-9]");
+// regex mem_register_adressing("(r|R)[0-9]");
+// regex mem_register_adressing_mov("([)(r|R)[0-9] ( + ) [a-zA-Z0-9_][0-9]+ (])");
 
 // regex label_only("^(" + str_symbol + "):$");             // nothing is after label
 // regex label_with_command("^(" + str_symbol + "):(.*)$"); // something is after label

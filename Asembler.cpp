@@ -133,6 +133,9 @@ int Asembler::next_instruction()
     case 24:
         reg_instruction(6, 0, red);
         break;
+    case 25:
+        call_instruction(red);
+        break;
     }
 
     if (rez >= 0)
@@ -196,6 +199,8 @@ int Asembler::get_code_of_instriction(string red)
         return 23;
     if (regex_match(red, xchg_instr))
         return 24;
+    if (regex_match(red, call_instr))
+        return 25;
 
     return -3;
 }
@@ -507,6 +512,40 @@ void Asembler::ret_instruction()
 {
     this->for_write.push_back('0');
     this->for_write.push_back('4');
+}
+
+void Asembler::call_instruction(string red) // TODO: zavrsiti
+{
+    string novi = regex_replace(red, call_instr_filter, "");
+    novi = regex_replace(novi, regex(" "), "");
+
+    char fa, sa;
+    if (regex_match(novi, dolar))
+    {
+        novi = regex_replace(novi, dolar_filter, "");
+        sa = '0';
+        fa = *novi.c_str();
+    }
+    else if (regex_match(novi, clasic_literal))
+    {
+        sa = '4';
+        fa = *novi.c_str();
+    }
+    else if (regex_match(novi, clasic_symbol))
+    {
+        sa = '4';
+
+        for (auto tr : this->symbolTable)
+            if (tr.name == novi)
+                fa = *to_string(tr.value).c_str();
+    }
+
+    this->for_write.push_back('0');
+    this->for_write.push_back('3');
+    this->for_write.push_back(fa);
+    this->for_write.push_back('F');
+    this->for_write.push_back(sa);
+    this->for_write.push_back('0');
 }
 
 void Asembler::parse_reg_instruction(string red, int &destination, int &source, bool one_read)
