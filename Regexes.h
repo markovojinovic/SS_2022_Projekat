@@ -1,7 +1,9 @@
 #ifndef _REGEXES_H
 #define _REGEXES_H
+
 #include <regex>
 #include <string>
+
 using namespace std;
 
 regex direktives(".+");
@@ -69,10 +71,10 @@ regex dolar("\\$[0-9]");
 regex dolar_filter("\\$");
 regex clasic_literal("[0-9]+");
 regex clasic_symbol("[a-zA-Z0-9_]+");
-// regex percent("(%)(.*)");
-// regex register_adressing("(r|R)[0-9]");
-// regex mem_register_adressing("(r|R)[0-9]");
-// regex mem_register_adressing_mov("([)(r|R)[0-9] ( + ) [a-zA-Z0-9_][0-9]+ (])");
+regex percent("\\%(.*)");
+regex register_adressing("(r|R)[0-9]");
+regex mem_register_adressing("(r|R)[0-9]");
+regex mem_register_adressing_mov("\\[(r|R)[0-9] ( \\+ ) [a-zA-Z0-9_][0-9]+ \\]");
 
 // regex label_only("^(" + str_symbol + "):$");             // nothing is after label
 // regex label_with_command("^(" + str_symbol + "):(.*)$"); // something is after label
