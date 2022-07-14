@@ -106,6 +106,7 @@ private:
 
     int add_to_symbol_table(Symbol, bool);
     void parse_reg_instruction(string, int &, int &, bool);
+    void data_adressing(string, char, char, char, char);
 };
 
 #endif

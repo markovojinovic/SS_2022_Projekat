@@ -514,12 +514,18 @@ void Asembler::ret_instruction()
     this->for_write.push_back('4');
 }
 
-void Asembler::call_instruction(string red) // TODO: zavrsiti
+void Asembler::call_instruction(string red) // TODO: zavrsiti    03f0
 {
     string novi = regex_replace(red, call_instr_filter, "");
     novi = regex_replace(novi, regex(" "), "");
 
-    char fa, sa;
+    this->data_adressing(novi, '0', '3', 'F', '0');
+}
+
+void Asembler::data_adressing(string novi, char c1, char c2, char c3, char c4)
+{
+    char fa, sa, ta, ca;
+    bool oba = false, dalje = false;
     if (regex_match(novi, dolar))
     {
         novi = regex_replace(novi, dolar_filter, "");
@@ -531,6 +537,115 @@ void Asembler::call_instruction(string red) // TODO: zavrsiti
         sa = '4';
         fa = *novi.c_str();
     }
+    else if (regex_match(novi, percent))
+    {
+        dalje = true;
+        sa = '3';
+
+        novi = regex_replace(novi, percent_filter, "");
+
+        smatch m;
+        regex_search(novi, m, clasic_symbol);
+        string second = m.str(0);
+        string first = "7";
+
+        for (auto tr : this->symbolTable)
+            if (tr.name == second)
+                second = to_string(tr.value);
+
+        if (second.size() > 1)
+        {
+            oba = true;
+            ta = second[0];
+            ca = second[1];
+        }
+        else
+        {
+            ta = second[0];
+        }
+
+        novi = regex_replace(novi, filter_from_add, "");
+        novi = regex_replace(novi, first_indirekt_filter, "");
+        novi = regex_replace(novi, plus_filter, "");
+        novi = regex_replace(novi, second_indirekt_filter, "");
+        fa = *first.c_str();
+    }
+    else if (regex_match(novi, register_adressing))
+    {
+        sa = '5';
+        novi = regex_replace(novi, filter_from_add, "");
+        fa = *novi.c_str();
+    }
+    else if (regex_match(novi, mem_register_adressing))
+    {
+        sa = '2';
+        novi = regex_replace(novi, filter_from_add, "");
+        novi = regex_replace(novi, first_indirekt_filter, "");
+        novi = regex_replace(novi, second_indirekt_filter, "");
+        fa = *novi.c_str();
+    }
+    else if (regex_match(novi, mem_register_adressing_mov_literal))
+    {
+        dalje = true;
+        sa = '3';
+
+        smatch m;
+        regex_search(novi, m, clasic_literal);
+        string first = m.str(0);
+        novi = m.suffix().str();
+        regex_search(novi, m, clasic_literal);
+        string second = m.str(0);
+
+        if (second.size() > 1)
+        {
+            oba = true;
+            ta = second[0];
+            ca = second[1];
+        }
+        else
+        {
+            ta = second[0];
+        }
+
+        novi = regex_replace(novi, filter_from_add, "");
+        novi = regex_replace(novi, first_indirekt_filter, "");
+        novi = regex_replace(novi, plus_filter, "");
+        novi = regex_replace(novi, second_indirekt_filter, "");
+        fa = *first.c_str();
+    }
+    else if (regex_match(novi, mem_register_adressing_mov_symbol))
+    {
+        dalje = true;
+        sa = '3';
+
+        smatch m;
+        regex_search(novi, m, clasic_literal);
+        string first = m.str(0);
+        novi = m.suffix().str();
+        regex_search(novi, m, clasic_symbol);
+        string second = m.str(0);
+
+        for (auto tr : this->symbolTable)
+            if (tr.name == second)
+                second = to_string(tr.value);
+
+        if (second.size() > 1)
+        {
+            oba = true;
+            ta = second[0];
+            ca = second[1];
+        }
+        else
+        {
+            ta = second[0];
+        }
+
+        novi = regex_replace(novi, filter_from_add, "");
+        novi = regex_replace(novi, first_indirekt_filter, "");
+        novi = regex_replace(novi, plus_filter, "");
+        novi = regex_replace(novi, second_indirekt_filter, "");
+        fa = *first.c_str();
+    }
     else if (regex_match(novi, clasic_symbol))
     {
         sa = '4';
@@ -540,12 +655,20 @@ void Asembler::call_instruction(string red) // TODO: zavrsiti
                 fa = *to_string(tr.value).c_str();
     }
 
-    this->for_write.push_back('0');
-    this->for_write.push_back('3');
+    this->for_write.push_back(c1);
+    this->for_write.push_back(c2);
     this->for_write.push_back(fa);
-    this->for_write.push_back('F');
+    this->for_write.push_back(c3);
     this->for_write.push_back(sa);
-    this->for_write.push_back('0');
+    this->for_write.push_back(c4);
+    if (dalje)
+    {
+        if (oba)
+            this->for_write.push_back(ca);
+        else
+            this->for_write.push_back('0');
+        this->for_write.push_back(ta);
+    }
 }
 
 void Asembler::parse_reg_instruction(string red, int &destination, int &source, bool one_read)
