@@ -71,7 +71,9 @@ regex ldr_instr_filter("(ldr)");
 regex str_instr("(str)(.*)");
 regex str_instr_filter("(str)");
 
-regex dolar("\\$[0-9]+");
+regex zvezdica("\\*(.*)");
+regex zvezdica_filter("\\*");
+regex dolar("\\$[a-zA-Z0-9_][0-9]+");
 regex dolar_filter("\\$");
 regex clasic_literal("[0-9]+");
 regex clasic_symbol("[a-zA-Z0-9_]+");
@@ -84,6 +86,15 @@ regex second_indirekt_filter("\\]");
 regex plus_filter("\\+");
 regex mem_register_adressing_mov_literal("\\[(r|R)[0-9]+\\+[0-9]+\\]+");
 regex mem_register_adressing_mov_symbol("\\[(r|R)[0-9]+\\+[a-zA-Z0-9_]+\\]");
+
+regex jmp_instr("(jmp)(.*)");
+regex jmp_instr_filter("(jmp)");
+regex jeq_instr("(jeq)(.*)");
+regex jeq_instr_filter("(jeq)");
+regex jne_instr("(jne)(.*)");
+regex jne_instr_filter("(jne)");
+regex jgt_instr("(jgt)(.*)");
+regex jgt_instr_filter("(jgt)");
 
 // regex label_only("^(" + str_symbol + "):$");             // nothing is after label
 // regex label_with_command("^(" + str_symbol + "):(.*)$"); // something is after label

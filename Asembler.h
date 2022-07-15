@@ -17,26 +17,8 @@ class Asembler
 public:
     Asembler(string, string);
     ~Asembler();
-    int next_instruction();
-    int get_code_of_instriction(string);
-    void extern_function(string);
-    void global_function(string);
-    void section_function(string);
-    void word_function(string);
-    void skip_function(string);
-
-    void halt_instruction();
-    void iret_instruction();
-    void ret_instruction();
-    void call_instruction(string);
-
-    void reg_instruction(int, int, string);
-    void ldr_instruction(string);
-    void str_instruction(string);
 
     void print_symbol_table();
-    void print_vector();
-
     int start_reading();
 
     // Kada se bude pisao backpatching ako se naidje na RR vrednosti u kodu tada se manja vrednost novom vrednoscu promenljive, u suprotnom ne
@@ -106,9 +88,31 @@ private:
 
     char nonce = 'R';
 
+    int next_instruction();
+    int get_code_of_instriction(string);
+
+    void extern_function(string);
+    void global_function(string);
+    void section_function(string);
+    void word_function(string);
+    void skip_function(string);
+
+    void halt_instruction();
+    void iret_instruction();
+    void ret_instruction();
+    void call_instruction(string);
+
+    void reg_instruction(int, int, string);
+    void jmp_instruction(int, string);
+    void ldr_instruction(string);
+    void str_instruction(string);
+
     int add_to_symbol_table(Symbol, bool);
     void parse_reg_instruction(string, int &, int &, bool);
     void data_adressing(string, string &, string &, bool &, char &);
+    void jump_adressing(string, string &, string &, bool &, char &);
+
+    void print_vector();
 };
 
 #endif

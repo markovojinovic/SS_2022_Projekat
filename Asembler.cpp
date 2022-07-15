@@ -139,6 +139,18 @@ int Asembler::next_instruction()
     case 27:
         str_instruction(red);
         break;
+    case 28:
+        jmp_instruction(0, red);
+        break;
+    case 29:
+        jmp_instruction(1, red);
+        break;
+    case 30:
+        jmp_instruction(2, red);
+        break;
+    case 31:
+        jmp_instruction(3, red);
+        break;
     }
 
     if (rez >= 0)
@@ -208,6 +220,14 @@ int Asembler::get_code_of_instriction(string red)
         return 26;
     if (regex_match(red, str_instr))
         return 27;
+    if (regex_match(red, jmp_instr))
+        return 28;
+    if (regex_match(red, jeq_instr))
+        return 29;
+    if (regex_match(red, jne_instr))
+        return 30;
+    if (regex_match(red, jgt_instr))
+        return 31;
 
     return -3;
 }
@@ -555,7 +575,29 @@ void Asembler::data_adressing(string novi, string &first, string &second, bool &
             this->stopProcess = true;
         }
         sa = '0';
-        first = novi;
+        if (regex_match(novi, clasic_literal))
+            first = novi;
+        else if (regex_match(novi, clasic_symbol))
+        {
+            string val = "";
+            for (auto tr : this->symbolTable)
+                if (tr.name == novi)
+                    val = to_string(tr.value);
+            if (val == "")
+            {
+                this->op_code = UNDEFINDE_SYMBOL;
+                printError(op_code, line);
+                this->stopProcess = true;
+            }
+            else
+                second = val;
+        }
+        else
+        {
+            this->op_code = SINTAX_ERROR;
+            printError(op_code, line);
+            this->stopProcess = true;
+        }
     }
     else if (regex_match(novi, clasic_literal))
     {
@@ -761,6 +803,260 @@ void Asembler::data_adressing(string novi, string &first, string &second, bool &
     }
 }
 
+void Asembler::jump_adressing(string novi, string &first, string &second, bool &one, char &sa)
+{
+    one = false;
+    if (regex_match(novi, clasic_literal))
+    {
+        one = true;
+        if (novi == "")
+        {
+            this->op_code = SINTAX_ERROR;
+            printError(op_code, line);
+            this->stopProcess = true;
+        }
+        sa = '0';
+        first = novi;
+    }
+    else if (regex_match(novi, clasic_symbol))
+    {
+        one = true;
+        sa = '0';
+
+        string val = "";
+        for (auto tr : this->symbolTable)
+            if (tr.name == novi)
+                val = to_string(tr.value);
+        if (val == "")
+        {
+            this->op_code = UNDEFINDE_SYMBOL;
+            printError(op_code, line);
+            this->stopProcess = true;
+        }
+        else
+            second = val;
+    }
+    else if (regex_match(novi, percent))
+    {
+        sa = '5';
+
+        novi = regex_replace(novi, percent_filter, "");
+        if (novi == "")
+        {
+            this->op_code = SINTAX_ERROR;
+            printError(op_code, line);
+            this->stopProcess = true;
+        }
+        else
+        {
+
+            smatch m;
+            regex_search(novi, m, clasic_symbol);
+            second = m.str(0);
+            if (second == "")
+            {
+                this->op_code = SINTAX_ERROR;
+                printError(op_code, line);
+                this->stopProcess = true;
+            }
+            else
+            {
+                first = "7";
+                string val = "";
+                for (auto tr : this->symbolTable)
+                    if (tr.name == second)
+                        val = to_string(tr.value);
+                if (val == "")
+                {
+                    this->op_code = UNDEFINDE_SYMBOL;
+                    printError(op_code, line);
+                    this->stopProcess = true;
+                }
+                else
+                    second = val;
+            }
+        }
+    }
+    else if (regex_match(novi, zvezdica))
+    {
+        novi = regex_replace(novi, zvezdica_filter, "");
+
+        if (regex_match(novi, register_adressing))
+        {
+            one = true;
+            sa = '1';
+            novi = regex_replace(novi, filter_from_add, "");
+            if (novi == "")
+            {
+                this->op_code = SINTAX_ERROR;
+                printError(op_code, line);
+                this->stopProcess = true;
+            }
+            else
+            {
+                first = novi;
+                if (stoi(first) > 7 or first.size() > 1)
+                {
+                    this->op_code = REGISTER_OUT_OF_BOUNDS;
+                    printError(op_code, line);
+                    this->stopProcess = true;
+                }
+            }
+        }
+        else if (regex_match(novi, mem_register_adressing))
+        {
+            one = true;
+            sa = '2';
+            novi = regex_replace(novi, filter_from_add, "");
+            novi = regex_replace(novi, first_indirekt_filter, "");
+            novi = regex_replace(novi, second_indirekt_filter, "");
+            if (novi == "")
+            {
+                this->op_code = SINTAX_ERROR;
+                printError(op_code, line);
+                this->stopProcess = true;
+            }
+            else
+            {
+                first = novi;
+                if (stoi(first) > 7 or first.size() > 1)
+                {
+                    this->op_code = REGISTER_OUT_OF_BOUNDS;
+                    printError(op_code, line);
+                    this->stopProcess = true;
+                }
+            }
+        }
+        else if (regex_match(novi, mem_register_adressing_mov_literal))
+        {
+            sa = '3';
+
+            smatch m;
+            regex_search(novi, m, clasic_literal);
+            first = m.str(0);
+            if (first == "")
+            {
+                this->op_code = SINTAX_ERROR;
+                printError(op_code, line);
+                this->stopProcess = true;
+            }
+            else
+            {
+                if (stoi(first) > 7 or first.size() > 1)
+                {
+                    this->op_code = REGISTER_OUT_OF_BOUNDS;
+                    printError(op_code, line);
+                    this->stopProcess = true;
+                }
+                else
+                {
+                    novi = m.suffix().str();
+                    regex_search(novi, m, clasic_literal);
+                    second = m.str(0);
+                    if (second == "")
+                    {
+                        this->op_code = SINTAX_ERROR;
+                        printError(op_code, line);
+                        this->stopProcess = true;
+                    }
+                }
+            }
+        }
+        else if (regex_match(novi, mem_register_adressing_mov_symbol))
+        {
+            sa = '3';
+
+            smatch m;
+            regex_search(novi, m, clasic_literal);
+            first = m.str(0);
+            if (first == "")
+            {
+                this->op_code = SINTAX_ERROR;
+                printError(op_code, line);
+                this->stopProcess = true;
+            }
+            else
+            {
+                if (stoi(first) > 7 or first.size() > 1)
+                {
+                    this->op_code = REGISTER_OUT_OF_BOUNDS;
+                    printError(op_code, line);
+                    this->stopProcess = true;
+                }
+                else
+                {
+                    novi = m.suffix().str();
+                    regex_search(novi, m, clasic_symbol);
+                    second = m.str(0);
+                    if (second == "")
+                    {
+                        this->op_code = SINTAX_ERROR;
+                        printError(op_code, line);
+                        this->stopProcess = true;
+                    }
+                    else
+                    {
+                        string val = "";
+                        for (auto tr : this->symbolTable)
+                            if (tr.name == second)
+                                val = to_string(tr.value);
+                        if (val == "")
+                        {
+                            this->op_code = UNDEFINDE_SYMBOL;
+                            printError(op_code, line);
+                            this->stopProcess = true;
+                        }
+                        else
+                            second = val;
+                    }
+                }
+            }
+        }
+        else if (regex_match(novi, clasic_literal))
+        {
+            one = true;
+            if (novi == "")
+            {
+                this->op_code = SINTAX_ERROR;
+                printError(op_code, line);
+                this->stopProcess = true;
+            }
+            sa = '4';
+            first = novi;
+        }
+        else if (regex_match(novi, clasic_symbol))
+        {
+            one = true;
+            sa = '4';
+
+            string val = "";
+            for (auto tr : this->symbolTable)
+                if (tr.name == novi)
+                    val = to_string(tr.value);
+            if (val == "")
+            {
+                this->op_code = UNDEFINDE_SYMBOL;
+                printError(op_code, line);
+                this->stopProcess = true;
+            }
+            else
+                second = val;
+        }
+        else
+        {
+            this->op_code = SINTAX_ERROR;
+            printError(op_code, line);
+            this->stopProcess = true;
+        }
+    }
+    else
+    {
+        this->op_code = SINTAX_ERROR;
+        printError(op_code, line);
+        this->stopProcess = true;
+    }
+}
+
 void Asembler::parse_reg_instruction(string red, int &destination, int &source, bool one_read)
 {
     int dest, src;
@@ -915,6 +1211,56 @@ void Asembler::reg_instruction(int fa, int sa, string red)
     else
         this->for_write.push_back('F');
     this->for_write.push_back(*to_string(dest).c_str());
+}
+
+void Asembler::jmp_instruction(int fa, string red)
+{
+    regex filter;
+    switch (fa)
+    {
+    case 0:
+        filter = jmp_instr_filter;
+        break;
+    case 1:
+        filter = jeq_instr_filter;
+        break;
+    case 2:
+        filter = jne_instr_filter;
+        break;
+    case 3:
+        filter = jgt_instr_filter;
+        break;
+    }
+
+    string novi = regex_replace(red, filter, "");
+    novi = regex_replace(novi, regex(" "), "");
+
+    string prvi, drugi;
+    char sa, ta, ca;
+    bool one;
+    this->jump_adressing(novi, prvi, drugi, one, sa);
+
+    this->for_write.push_back(*to_string(fa).c_str());
+    this->for_write.push_back('5');
+    if (sa == '1' || sa == '2' || sa == '3' || sa == '5')
+        this->for_write.push_back(*prvi.c_str());
+    else
+        this->for_write.push_back('F');
+    this->for_write.push_back('F');
+    this->for_write.push_back(sa);
+    this->for_write.push_back('0');
+    if (!one)
+    {
+        ta = drugi[0];
+        if (drugi.size() > 1)
+        {
+            ca = drugi[1];
+            this->for_write.push_back(ca);
+        }
+        else
+            this->for_write.push_back('0');
+        this->for_write.push_back(ta);
+    }
 }
 
 void Asembler::ldr_instruction(string red)

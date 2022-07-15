@@ -4,7 +4,10 @@
 
 .global c
 
-str r1, c
+jmp %c
+jne *10
+jeq *c
+jgt c
 
 halt
 
