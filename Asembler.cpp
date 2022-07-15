@@ -514,160 +514,254 @@ void Asembler::ret_instruction()
     this->for_write.push_back('4');
 }
 
-void Asembler::call_instruction(string red) // TODO: zavrsiti    03f0
+void Asembler::call_instruction(string red) // TODO: zavrsiti
 {
     string novi = regex_replace(red, call_instr_filter, "");
     novi = regex_replace(novi, regex(" "), "");
+    string first, second;
+    char sa, fa, ta, ca;
+    bool one;
 
-    this->data_adressing(novi, '0', '3', 'F', '0');
+    this->data_adressing(novi, first, second, one, sa);
+    fa = *first.c_str();
+
+    this->for_write.push_back('0');
+    this->for_write.push_back('3');
+    this->for_write.push_back(fa);
+    this->for_write.push_back('F');
+    this->for_write.push_back(sa);
+    this->for_write.push_back('0');
+    if (!one)
+    {
+        ta = second[0];
+        if (second.size() > 1)
+        {
+            ca = second[1];
+            this->for_write.push_back(ca);
+        }
+        else
+            this->for_write.push_back('0');
+        this->for_write.push_back(ta);
+    }
 }
 
-void Asembler::data_adressing(string novi, char c1, char c2, char c3, char c4)
+void Asembler::data_adressing(string novi, string &first, string &second, bool &one, char &sa)
 {
-    char fa, sa, ta, ca;
-    bool oba = false, dalje = false;
+    one = false;
     if (regex_match(novi, dolar))
     {
+        one = true;
         novi = regex_replace(novi, dolar_filter, "");
+        if (novi == "")
+        {
+            this->op_code = -10;
+            printError(op_code, line);
+            this->stopProcess = true;
+        }
         sa = '0';
-        fa = *novi.c_str();
+        first = novi;
     }
     else if (regex_match(novi, clasic_literal))
     {
+        one = true;
         sa = '4';
-        fa = *novi.c_str();
+        first = novi;
     }
     else if (regex_match(novi, percent))
     {
-        dalje = true;
         sa = '3';
 
         novi = regex_replace(novi, percent_filter, "");
-
-        smatch m;
-        regex_search(novi, m, clasic_symbol);
-        string second = m.str(0);
-        string first = "7";
-
-        for (auto tr : this->symbolTable)
-            if (tr.name == second)
-                second = to_string(tr.value);
-
-        if (second.size() > 1)
+        if (novi == "")
         {
-            oba = true;
-            ta = second[0];
-            ca = second[1];
+            this->op_code = -10;
+            printError(op_code, line);
+            this->stopProcess = true;
         }
         else
         {
-            ta = second[0];
-        }
 
-        novi = regex_replace(novi, filter_from_add, "");
-        novi = regex_replace(novi, first_indirekt_filter, "");
-        novi = regex_replace(novi, plus_filter, "");
-        novi = regex_replace(novi, second_indirekt_filter, "");
-        fa = *first.c_str();
+            smatch m;
+            regex_search(novi, m, clasic_symbol);
+            second = m.str(0);
+            if (second == "")
+            {
+                this->op_code = -10;
+                printError(op_code, line);
+                this->stopProcess = true;
+            }
+            else
+            {
+                first = "7";
+                string val = "";
+                for (auto tr : this->symbolTable)
+                    if (tr.name == second)
+                        val = to_string(tr.value);
+                if (val == "")
+                {
+                    this->op_code = -12;
+                    printError(op_code, line);
+                    this->stopProcess = true;
+                }
+                else
+                    second = val;
+            }
+        }
     }
     else if (regex_match(novi, register_adressing))
     {
+        one = true;
         sa = '5';
         novi = regex_replace(novi, filter_from_add, "");
-        fa = *novi.c_str();
+        if (novi == "")
+        {
+            this->op_code = -10;
+            printError(op_code, line);
+            this->stopProcess = true;
+        }
+        else
+        {
+            first = novi;
+            if (stoi(first) > 7 or first.size() > 1)
+            {
+                this->op_code = -11;
+                printError(op_code, line);
+                this->stopProcess = true;
+            }
+        }
     }
     else if (regex_match(novi, mem_register_adressing))
     {
+        one = true;
         sa = '2';
         novi = regex_replace(novi, filter_from_add, "");
         novi = regex_replace(novi, first_indirekt_filter, "");
         novi = regex_replace(novi, second_indirekt_filter, "");
-        fa = *novi.c_str();
+        if (novi == "")
+        {
+            this->op_code = -10;
+            printError(op_code, line);
+            this->stopProcess = true;
+        }
+        else
+        {
+            first = novi;
+            if (stoi(first) > 7 or first.size() > 1)
+            {
+                this->op_code = -11;
+                printError(op_code, line);
+                this->stopProcess = true;
+            }
+        }
     }
     else if (regex_match(novi, mem_register_adressing_mov_literal))
     {
-        dalje = true;
         sa = '3';
 
         smatch m;
         regex_search(novi, m, clasic_literal);
-        string first = m.str(0);
-        novi = m.suffix().str();
-        regex_search(novi, m, clasic_literal);
-        string second = m.str(0);
-
-        if (second.size() > 1)
+        first = m.str(0);
+        if (first == "")
         {
-            oba = true;
-            ta = second[0];
-            ca = second[1];
+            this->op_code = -10;
+            printError(op_code, line);
+            this->stopProcess = true;
         }
         else
         {
-            ta = second[0];
+            if (stoi(first) > 7 or first.size() > 1)
+            {
+                this->op_code = -11;
+                printError(op_code, line);
+                this->stopProcess = true;
+            }
+            else
+            {
+                novi = m.suffix().str();
+                regex_search(novi, m, clasic_literal);
+                second = m.str(0);
+                if (second == "")
+                {
+                    this->op_code = -10;
+                    printError(op_code, line);
+                    this->stopProcess = true;
+                }
+            }
         }
-
-        novi = regex_replace(novi, filter_from_add, "");
-        novi = regex_replace(novi, first_indirekt_filter, "");
-        novi = regex_replace(novi, plus_filter, "");
-        novi = regex_replace(novi, second_indirekt_filter, "");
-        fa = *first.c_str();
     }
     else if (regex_match(novi, mem_register_adressing_mov_symbol))
     {
-        dalje = true;
         sa = '3';
 
         smatch m;
         regex_search(novi, m, clasic_literal);
-        string first = m.str(0);
-        novi = m.suffix().str();
-        regex_search(novi, m, clasic_symbol);
-        string second = m.str(0);
-
-        for (auto tr : this->symbolTable)
-            if (tr.name == second)
-                second = to_string(tr.value);
-
-        if (second.size() > 1)
+        first = m.str(0);
+        if (first == "")
         {
-            oba = true;
-            ta = second[0];
-            ca = second[1];
+            this->op_code = -10;
+            printError(op_code, line);
+            this->stopProcess = true;
         }
         else
         {
-            ta = second[0];
+            if (stoi(first) > 7 or first.size() > 1)
+            {
+                this->op_code = -11;
+                printError(op_code, line);
+                this->stopProcess = true;
+            }
+            else
+            {
+                novi = m.suffix().str();
+                regex_search(novi, m, clasic_symbol);
+                second = m.str(0);
+                if (second == "")
+                {
+                    this->op_code = -10;
+                    printError(op_code, line);
+                    this->stopProcess = true;
+                }
+                else
+                {
+                    string val = "";
+                    for (auto tr : this->symbolTable)
+                        if (tr.name == second)
+                            val = to_string(tr.value);
+                    if (val == "")
+                    {
+                        this->op_code = -12;
+                        printError(op_code, line);
+                        this->stopProcess = true;
+                    }
+                    else
+                        second = val;
+                }
+            }
         }
-
-        novi = regex_replace(novi, filter_from_add, "");
-        novi = regex_replace(novi, first_indirekt_filter, "");
-        novi = regex_replace(novi, plus_filter, "");
-        novi = regex_replace(novi, second_indirekt_filter, "");
-        fa = *first.c_str();
     }
     else if (regex_match(novi, clasic_symbol))
     {
+        one = true;
         sa = '4';
 
+        string val = "";
         for (auto tr : this->symbolTable)
             if (tr.name == novi)
-                fa = *to_string(tr.value).c_str();
-    }
-
-    this->for_write.push_back(c1);
-    this->for_write.push_back(c2);
-    this->for_write.push_back(fa);
-    this->for_write.push_back(c3);
-    this->for_write.push_back(sa);
-    this->for_write.push_back(c4);
-    if (dalje)
-    {
-        if (oba)
-            this->for_write.push_back(ca);
+                val = to_string(tr.value);
+        if (val == "")
+        {
+            this->op_code = -12;
+            printError(op_code, line);
+            this->stopProcess = true;
+        }
         else
-            this->for_write.push_back('0');
-        this->for_write.push_back(ta);
+            second = val;
+    }
+    else
+    {
+        this->op_code = -10;
+        printError(op_code, line);
+        this->stopProcess = true;
     }
 }
 

@@ -4,7 +4,7 @@
 
 .global c
 
-call %c
+call [r1 + c]
 
 halt
 

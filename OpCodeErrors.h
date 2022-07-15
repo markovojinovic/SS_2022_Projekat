@@ -42,6 +42,10 @@ void printError(int code, int line)
         cout << "Operation code: " << code << " = Registar nije u opsegu od 0 do 7!!!" << endl;
         cout << "Line: " << line << endl;
         break;
+    case -12:
+        cout << "Operation code: " << code << " = Simbol nije definisan!!!" << endl;
+        cout << "Line: " << line << endl;
+        break;
     default:
         break;
     }
