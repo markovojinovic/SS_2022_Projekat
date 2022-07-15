@@ -17,7 +17,7 @@ Asembler::Asembler(string in_name, string out_name)
     file.open(input_name);
     if (!file || !file.is_open())
     {
-        op_code = -2;
+        op_code = FILE_ERROR;
         printError(op_code, line);
         this->stopProcess = true;
     }
@@ -25,7 +25,7 @@ Asembler::Asembler(string in_name, string out_name)
     output.open(this->output_name, ios_base::out | ios_base::binary);
     if (!file.is_open())
     {
-        op_code = -2;
+        op_code = FILE_ERROR;
         printError(op_code, line);
         this->stopProcess = true;
     }
@@ -40,9 +40,8 @@ Asembler::~Asembler()
 int Asembler::next_instruction()
 {
     if (this->stopProcess)
-    {
         return -8;
-    }
+
     string red;
     if (!file.eof())
         getline(this->file, red);
@@ -61,11 +60,9 @@ int Asembler::next_instruction()
     }
 
     if (rez == 7)
-    {
         return rez;
-    }
 
-    switch (rez) // TODO: zavrsiti
+    switch (rez)
     {
     case 2:
         global_function(red);
@@ -136,6 +133,12 @@ int Asembler::next_instruction()
     case 25:
         call_instruction(red);
         break;
+    case 26:
+        ldr_instruction(red);
+        break;
+    case 27:
+        str_instruction(red);
+        break;
     }
 
     if (rez >= 0)
@@ -201,6 +204,10 @@ int Asembler::get_code_of_instriction(string red)
         return 24;
     if (regex_match(red, call_instr))
         return 25;
+    if (regex_match(red, ldr_instr))
+        return 26;
+    if (regex_match(red, str_instr))
+        return 27;
 
     return -3;
 }
@@ -213,7 +220,7 @@ void Asembler::extern_function(string red)
 
     if (novi == "")
     {
-        op_code = -3;
+        op_code = UNDEFINED_INSTRUCTION;
         printError(op_code, this->line);
         this->stopProcess = true;
         return;
@@ -226,29 +233,25 @@ void Asembler::extern_function(string red)
         bool greska = false;
 
         for (string a : this->global)
-        {
             if (a == new_symbol)
             {
-                op_code = -4;
+                op_code = EXPORT_IMPORT_ERROR;
                 printError(op_code, this->line);
                 this->stopProcess = true;
                 return;
             }
-        }
 
         for (Symbol tr : this->symbolTable)
-        {
             if (tr.name != new_symbol)
                 continue;
             else
             {
-                this->op_code = -6;
+                this->op_code = ALREDY_DEFINED;
                 greska = true;
                 this->stopProcess = true;
                 printError(op_code, line);
                 break;
             }
-        }
 
         if (greska)
         {
@@ -258,10 +261,9 @@ void Asembler::extern_function(string red)
 
         bool contains = false;
         for (string a : this->extern_)
-        {
             if (a == new_symbol)
                 contains = true;
-        }
+
         if (!contains)
         {
             this->add_to_symbol_table(Symbol(new_symbol, false, false, 0), false);
@@ -279,7 +281,7 @@ void Asembler::global_function(string red)
 
     if (novi == "")
     {
-        op_code = -3;
+        op_code = UNDEFINED_INSTRUCTION;
         printError(op_code, this->line);
         this->stopProcess = true;
         return;
@@ -290,24 +292,22 @@ void Asembler::global_function(string red)
         string new_symbol = m.str(0);
         new_symbol = regex_replace(new_symbol, regex(" "), "");
         for (string a : this->extern_)
-        {
             if (a == new_symbol)
             {
-                op_code = -4;
+                op_code = EXPORT_IMPORT_ERROR;
                 printError(-4, this->line);
                 this->stopProcess = true;
                 return;
             }
-        }
+
         bool contains = false;
         for (auto a : this->symbolTable)
-        {
             if (a.name == new_symbol)
             {
                 contains = true;
                 this->add_to_symbol_table(Symbol(new_symbol, true, false, 0), contains);
             }
-        }
+
         if (!contains)
         {
             this->global.push_back(new_symbol);
@@ -322,12 +322,8 @@ void Asembler::section_function(string red)
     if (this->currentSection != "")
     {
         for (auto i = this->symbolTable.rbegin(); i != this->symbolTable.rend(); i++)
-        {
             if (i->name == this->currentSection)
-            {
                 i->size = this->locationCounter;
-            }
-        }
 
         this->print_vector();
     }
@@ -338,7 +334,7 @@ void Asembler::section_function(string red)
 
     if (novi == "")
     {
-        op_code = -3;
+        op_code = UNDEFINED_INSTRUCTION;
         printError(op_code, this->line);
         this->stopProcess = true;
         return;
@@ -353,7 +349,7 @@ void Asembler::section_function(string red)
     }
     else
     {
-        op_code = -3;
+        op_code = UNDEFINED_INSTRUCTION;
         printError(op_code, line);
         this->stopProcess = true;
         return;
@@ -364,7 +360,7 @@ void Asembler::word_function(string red)
 {
     if (this->currentSection == "")
     {
-        this->op_code = -7;
+        this->op_code = OUT_OF_SECTION;
         printError(op_code, line);
         this->stopProcess = true;
         return;
@@ -376,7 +372,7 @@ void Asembler::word_function(string red)
 
     if (novi == "" || novi == " ")
     {
-        op_code = -3;
+        op_code = UNDEFINED_INSTRUCTION;
         printError(op_code, this->line);
         this->stopProcess = true;
         return;
@@ -452,7 +448,7 @@ void Asembler::skip_function(string red)
 {
     if (this->currentSection == "")
     {
-        this->op_code = -7;
+        this->op_code = OUT_OF_SECTION;
         printError(op_code, line);
         this->stopProcess = true;
         return;
@@ -464,7 +460,7 @@ void Asembler::skip_function(string red)
 
     if (novi == "")
     {
-        op_code = -3;
+        op_code = UNDEFINED_INSTRUCTION;
         printError(op_code, this->line);
         this->stopProcess = true;
         return;
@@ -490,13 +486,13 @@ void Asembler::skip_function(string red)
     }
     else
     {
-        this->op_code = -3;
+        this->op_code = UNDEFINED_INSTRUCTION;
         printError(op_code, line);
         this->stopProcess = true;
     }
 }
 
-void Asembler::halt_instruction() // TODO: Videti da li jos treba nesto da se doda
+void Asembler::halt_instruction()
 {
     this->for_write.push_back('0');
     this->for_write.push_back('0');
@@ -514,7 +510,7 @@ void Asembler::ret_instruction()
     this->for_write.push_back('4');
 }
 
-void Asembler::call_instruction(string red) // TODO: zavrsiti
+void Asembler::call_instruction(string red)
 {
     string novi = regex_replace(red, call_instr_filter, "");
     novi = regex_replace(novi, regex(" "), "");
@@ -554,7 +550,7 @@ void Asembler::data_adressing(string novi, string &first, string &second, bool &
         novi = regex_replace(novi, dolar_filter, "");
         if (novi == "")
         {
-            this->op_code = -10;
+            this->op_code = SINTAX_ERROR;
             printError(op_code, line);
             this->stopProcess = true;
         }
@@ -574,7 +570,7 @@ void Asembler::data_adressing(string novi, string &first, string &second, bool &
         novi = regex_replace(novi, percent_filter, "");
         if (novi == "")
         {
-            this->op_code = -10;
+            this->op_code = SINTAX_ERROR;
             printError(op_code, line);
             this->stopProcess = true;
         }
@@ -586,7 +582,7 @@ void Asembler::data_adressing(string novi, string &first, string &second, bool &
             second = m.str(0);
             if (second == "")
             {
-                this->op_code = -10;
+                this->op_code = SINTAX_ERROR;
                 printError(op_code, line);
                 this->stopProcess = true;
             }
@@ -599,7 +595,7 @@ void Asembler::data_adressing(string novi, string &first, string &second, bool &
                         val = to_string(tr.value);
                 if (val == "")
                 {
-                    this->op_code = -12;
+                    this->op_code = UNDEFINDE_SYMBOL;
                     printError(op_code, line);
                     this->stopProcess = true;
                 }
@@ -615,7 +611,7 @@ void Asembler::data_adressing(string novi, string &first, string &second, bool &
         novi = regex_replace(novi, filter_from_add, "");
         if (novi == "")
         {
-            this->op_code = -10;
+            this->op_code = SINTAX_ERROR;
             printError(op_code, line);
             this->stopProcess = true;
         }
@@ -624,7 +620,7 @@ void Asembler::data_adressing(string novi, string &first, string &second, bool &
             first = novi;
             if (stoi(first) > 7 or first.size() > 1)
             {
-                this->op_code = -11;
+                this->op_code = REGISTER_OUT_OF_BOUNDS;
                 printError(op_code, line);
                 this->stopProcess = true;
             }
@@ -639,7 +635,7 @@ void Asembler::data_adressing(string novi, string &first, string &second, bool &
         novi = regex_replace(novi, second_indirekt_filter, "");
         if (novi == "")
         {
-            this->op_code = -10;
+            this->op_code = SINTAX_ERROR;
             printError(op_code, line);
             this->stopProcess = true;
         }
@@ -648,7 +644,7 @@ void Asembler::data_adressing(string novi, string &first, string &second, bool &
             first = novi;
             if (stoi(first) > 7 or first.size() > 1)
             {
-                this->op_code = -11;
+                this->op_code = REGISTER_OUT_OF_BOUNDS;
                 printError(op_code, line);
                 this->stopProcess = true;
             }
@@ -663,7 +659,7 @@ void Asembler::data_adressing(string novi, string &first, string &second, bool &
         first = m.str(0);
         if (first == "")
         {
-            this->op_code = -10;
+            this->op_code = SINTAX_ERROR;
             printError(op_code, line);
             this->stopProcess = true;
         }
@@ -671,7 +667,7 @@ void Asembler::data_adressing(string novi, string &first, string &second, bool &
         {
             if (stoi(first) > 7 or first.size() > 1)
             {
-                this->op_code = -11;
+                this->op_code = REGISTER_OUT_OF_BOUNDS;
                 printError(op_code, line);
                 this->stopProcess = true;
             }
@@ -682,7 +678,7 @@ void Asembler::data_adressing(string novi, string &first, string &second, bool &
                 second = m.str(0);
                 if (second == "")
                 {
-                    this->op_code = -10;
+                    this->op_code = SINTAX_ERROR;
                     printError(op_code, line);
                     this->stopProcess = true;
                 }
@@ -698,7 +694,7 @@ void Asembler::data_adressing(string novi, string &first, string &second, bool &
         first = m.str(0);
         if (first == "")
         {
-            this->op_code = -10;
+            this->op_code = SINTAX_ERROR;
             printError(op_code, line);
             this->stopProcess = true;
         }
@@ -706,7 +702,7 @@ void Asembler::data_adressing(string novi, string &first, string &second, bool &
         {
             if (stoi(first) > 7 or first.size() > 1)
             {
-                this->op_code = -11;
+                this->op_code = REGISTER_OUT_OF_BOUNDS;
                 printError(op_code, line);
                 this->stopProcess = true;
             }
@@ -717,7 +713,7 @@ void Asembler::data_adressing(string novi, string &first, string &second, bool &
                 second = m.str(0);
                 if (second == "")
                 {
-                    this->op_code = -10;
+                    this->op_code = SINTAX_ERROR;
                     printError(op_code, line);
                     this->stopProcess = true;
                 }
@@ -729,7 +725,7 @@ void Asembler::data_adressing(string novi, string &first, string &second, bool &
                             val = to_string(tr.value);
                     if (val == "")
                     {
-                        this->op_code = -12;
+                        this->op_code = UNDEFINDE_SYMBOL;
                         printError(op_code, line);
                         this->stopProcess = true;
                     }
@@ -750,7 +746,7 @@ void Asembler::data_adressing(string novi, string &first, string &second, bool &
                 val = to_string(tr.value);
         if (val == "")
         {
-            this->op_code = -12;
+            this->op_code = UNDEFINDE_SYMBOL;
             printError(op_code, line);
             this->stopProcess = true;
         }
@@ -759,7 +755,7 @@ void Asembler::data_adressing(string novi, string &first, string &second, bool &
     }
     else
     {
-        this->op_code = -10;
+        this->op_code = SINTAX_ERROR;
         printError(op_code, line);
         this->stopProcess = true;
     }
@@ -781,7 +777,7 @@ void Asembler::parse_reg_instruction(string red, int &destination, int &source, 
         dest = stoi(new_symbol);
         if (dest > 7)
         {
-            op_code = -11;
+            op_code = REGISTER_OUT_OF_BOUNDS;
             printError(op_code, line);
             this->stopProcess = true;
             return;
@@ -798,7 +794,7 @@ void Asembler::parse_reg_instruction(string red, int &destination, int &source, 
                 src = stoi(new_symbol);
                 if (src > 7)
                 {
-                    op_code = -11;
+                    op_code = REGISTER_OUT_OF_BOUNDS;
                     printError(op_code, line);
                     this->stopProcess = true;
                     return;
@@ -809,7 +805,7 @@ void Asembler::parse_reg_instruction(string red, int &destination, int &source, 
             }
             else
             {
-                op_code = -10;
+                op_code = SINTAX_ERROR;
                 printError(op_code, line);
                 this->stopProcess = true;
                 return;
@@ -820,7 +816,7 @@ void Asembler::parse_reg_instruction(string red, int &destination, int &source, 
     }
     else
     {
-        op_code = -10;
+        op_code = SINTAX_ERROR;
         printError(op_code, line);
         this->stopProcess = true;
         return;
@@ -921,6 +917,110 @@ void Asembler::reg_instruction(int fa, int sa, string red)
     this->for_write.push_back(*to_string(dest).c_str());
 }
 
+void Asembler::ldr_instruction(string red)
+{
+    string novi = regex_replace(red, ldr_instr_filter, "");
+    novi = regex_replace(novi, regex(" "), "");
+    string first;
+
+    smatch m;
+    regex_search(novi, m, register_adressing);
+    first = m.str(0);
+    novi = regex_replace(novi, regex("(r|R)[0-9]+\\,"), "");
+    novi = regex_replace(novi, regex("( )*\\,"), "");
+    first = regex_replace(first, regex("(r|R)"), "");
+
+    if (stoi(first) > 7 || first.size() > 1)
+    {
+        op_code = REGISTER_OUT_OF_BOUNDS;
+        printError(op_code, line);
+        this->stopProcess = true;
+        return;
+    }
+    else
+    {
+        string prvi, drugi;
+        char sa;
+        bool one;
+        this->data_adressing(novi, prvi, drugi, one, sa);
+
+        char fa = *prvi.c_str(), ta, ca;
+        this->for_write.push_back('0');
+        this->for_write.push_back('A');
+        if (sa == '5' || sa == '2' || sa == '3')
+            this->for_write.push_back(fa);
+        else
+            this->for_write.push_back('F');
+        this->for_write.push_back(*first.c_str());
+        this->for_write.push_back(sa);
+        this->for_write.push_back('0');
+        if (!(sa == '5' || sa == '2' || sa == '3'))
+        {
+            ta = drugi[0];
+            if (drugi.size() > 1)
+            {
+                ca = drugi[1];
+                this->for_write.push_back(ca);
+            }
+            else
+                this->for_write.push_back('0');
+            this->for_write.push_back(ta);
+        }
+    }
+}
+
+void Asembler::str_instruction(string red)
+{
+    string novi = regex_replace(red, str_instr_filter, "");
+    novi = regex_replace(novi, regex(" "), "");
+    string first;
+
+    smatch m;
+    regex_search(novi, m, register_adressing);
+    first = m.str(0);
+    novi = regex_replace(novi, register_adressing, "");
+    novi = regex_replace(novi, regex("( )*\\,"), "");
+    first = regex_replace(first, regex("(r|R)"), "");
+
+    if (stoi(first) > 7 || first.size() > 1)
+    {
+        op_code = REGISTER_OUT_OF_BOUNDS;
+        printError(op_code, line);
+        this->stopProcess = true;
+        return;
+    }
+    else
+    {
+        string prvi, drugi;
+        char sa;
+        bool one;
+        this->data_adressing(novi, prvi, drugi, one, sa);
+
+        char fa = *prvi.c_str(), ta, ca;
+        this->for_write.push_back('0');
+        this->for_write.push_back('B');
+        if (sa == '5' || sa == '2' || sa == '3')
+            this->for_write.push_back(fa);
+        else
+            this->for_write.push_back('F');
+        this->for_write.push_back(*first.c_str());
+        this->for_write.push_back(sa);
+        this->for_write.push_back('0');
+        if (!(sa == '5' || sa == '2' || sa == '3'))
+        {
+            ta = drugi[0];
+            if (drugi.size() > 1)
+            {
+                ca = drugi[1];
+                this->for_write.push_back(ca);
+            }
+            else
+                this->for_write.push_back('0');
+            this->for_write.push_back(ta);
+        }
+    }
+}
+
 void Asembler::print_symbol_table()
 {
     cout << endl
@@ -962,7 +1062,7 @@ int Asembler::add_to_symbol_table(Symbol s, bool redefied)
             }
             else
             {
-                this->op_code = -6;
+                this->op_code = ALREDY_DEFINED;
                 printError(op_code, line);
                 this->stopProcess = true;
                 dodaj = false;
@@ -1004,12 +1104,8 @@ int Asembler::start_reading()
         if (rez == 7)
         {
             for (auto i = this->symbolTable.rbegin(); i != this->symbolTable.rend(); i++)
-            {
                 if (i->name == this->currentSection)
-                {
                     i->size = this->locationCounter;
-                }
-            }
 
             this->print_vector();
             break;

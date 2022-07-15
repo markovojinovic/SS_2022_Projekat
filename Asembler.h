@@ -31,6 +31,8 @@ public:
     void call_instruction(string);
 
     void reg_instruction(int, int, string);
+    void ldr_instruction(string);
+    void str_instruction(string);
 
     void print_symbol_table();
     void print_vector();

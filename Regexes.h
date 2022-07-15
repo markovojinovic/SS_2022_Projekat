@@ -66,6 +66,10 @@ regex xchg_instr("(xchg)(.*)");
 regex xchg_instr_filter("(xchg)");
 regex call_instr("(call)(.*)");
 regex call_instr_filter("(call)");
+regex ldr_instr("(ldr)(.*)");
+regex ldr_instr_filter("(ldr)");
+regex str_instr("(str)(.*)");
+regex str_instr_filter("(str)");
 
 regex dolar("\\$[0-9]+");
 regex dolar_filter("\\$");
