@@ -4,10 +4,7 @@
 
 .global c
 
-jmp %c
-jne *10
-jeq *c
-jgt c
+pop r4
 
 halt
 

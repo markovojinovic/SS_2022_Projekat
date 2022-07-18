@@ -106,6 +106,7 @@ private:
     void jmp_instruction(int, string);
     void ldr_instruction(string);
     void str_instruction(string);
+    void push_pop_instruction(string, int);
 
     int add_to_symbol_table(Symbol, bool);
     void parse_reg_instruction(string, int &, int &, bool);

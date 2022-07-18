@@ -151,6 +151,12 @@ int Asembler::next_instruction()
     case 31:
         jmp_instruction(3, red);
         break;
+    case 32:
+        push_pop_instruction(red, 0);
+        break;
+    case 33:
+        push_pop_instruction(red, 1);
+        break;
     }
 
     if (rez >= 0)
@@ -228,6 +234,10 @@ int Asembler::get_code_of_instriction(string red)
         return 30;
     if (regex_match(red, jgt_instr))
         return 31;
+    if (regex_match(red, regex("(push)(.*)")))
+        return 32;
+    if (regex_match(red, regex("(pop)(.*)")))
+        return 33;
 
     return -3;
 }
@@ -1365,6 +1375,53 @@ void Asembler::str_instruction(string red)
             this->for_write.push_back(ta);
         }
     }
+}
+
+void Asembler::push_pop_instruction(string red, int code) // push je 0 pop je 1, r6 je sp, kod adresiranja (2)
+{                                                         // push pre smanjenje(1), a pop posle povecavanje(4)
+    string novi = regex_replace(red, push_pop_filter, "");
+    novi = regex_replace(novi, regex(" "), "");
+    if (novi == "")
+    {
+        op_code = SINTAX_ERROR;
+        printError(op_code, this->line);
+        this->stopProcess = true;
+    }
+    novi = regex_replace(novi, regex("(r|R)"), "");
+    if (novi == "" || isalpha(novi[0]))
+    {
+        op_code = SINTAX_ERROR;
+        printError(op_code, this->line);
+        this->stopProcess = true;
+        return;
+    }
+    else if (stoi(novi) > 7 || novi.size() > 1)
+    {
+        op_code = REGISTER_OUT_OF_BOUNDS;
+        printError(op_code, this->line);
+        this->stopProcess = true;
+        return;
+    }
+
+    char c1, c2 = '0', c3 = *novi.c_str(), c4 = '6', c5, c6 = '2';
+
+    if (code) // POP
+    {
+        c1 = 'A';
+        c5 = '4';
+    }
+    else // PUSH
+    {
+        c1 = 'B';
+        c5 = '1';
+    }
+
+    this->for_write.push_back(c2);
+    this->for_write.push_back(c1);
+    this->for_write.push_back(c4);
+    this->for_write.push_back(c3);
+    this->for_write.push_back(c6);
+    this->for_write.push_back(c5);
 }
 
 void Asembler::print_symbol_table()

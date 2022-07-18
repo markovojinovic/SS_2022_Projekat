@@ -95,6 +95,8 @@ regex jne_instr("(jne)(.*)");
 regex jne_instr_filter("(jne)");
 regex jgt_instr("(jgt)(.*)");
 regex jgt_instr_filter("(jgt)");
+regex push_pop_instr("(push|pop)(.*)");
+regex push_pop_filter("(push|pop)");
 
 // regex label_only("^(" + str_symbol + "):$");             // nothing is after label
 // regex label_with_command("^(" + str_symbol + "):(.*)$"); // something is after label
