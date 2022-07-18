@@ -597,6 +597,7 @@ void Asembler::data_adressing(string novi, string &first, string &second, bool &
         }
         else if (regex_match(novi, clasic_symbol))
         {
+            first = "F";
             string val = "";
             for (auto tr : this->symbolTable)
                 if (tr.name == novi)
@@ -621,7 +622,8 @@ void Asembler::data_adressing(string novi, string &first, string &second, bool &
     {
         one = true;
         sa = '4';
-        first = novi;
+        second = novi;
+        first = "F";
     }
     else if (regex_match(novi, percent))
     {
@@ -799,6 +801,7 @@ void Asembler::data_adressing(string novi, string &first, string &second, bool &
     {
         one = true;
         sa = '4';
+        first = "F";
 
         string val = "";
         for (auto tr : this->symbolTable)
@@ -834,7 +837,8 @@ void Asembler::jump_adressing(string novi, string &first, string &second, bool &
             this->stopProcess = true;
         }
         sa = '0';
-        first = novi;
+        first = "F";
+        second = novi;
     }
     else if (regex_match(novi, clasic_symbol))
     {
@@ -1040,7 +1044,8 @@ void Asembler::jump_adressing(string novi, string &first, string &second, bool &
                 this->stopProcess = true;
             }
             sa = '4';
-            first = novi;
+            second = novi;
+            first = "F";
         }
         else if (regex_match(novi, clasic_symbol))
         {
