@@ -46,7 +46,7 @@ int Asembler::next_instruction()
     if (!file.eof())
         getline(this->file, red);
     else
-        return 0; // Znaci da nije greska samo smo dosli do kraja fajla
+        return 0;
     this->line++;
 
     int rez = 0;
@@ -1397,8 +1397,8 @@ void Asembler::str_instruction(string red)
     }
 }
 
-void Asembler::push_pop_instruction(string red, int code) // push je 0 pop je 1, r6 je sp, kod adresiranja (2)
-{                                                         // push pre smanjenje(1), a pop posle povecavanje(4)
+void Asembler::push_pop_instruction(string red, int code)
+{
     string novi = regex_replace(red, push_pop_filter, "");
     novi = regex_replace(novi, regex(" "), "");
     if (novi == "")
@@ -1425,12 +1425,12 @@ void Asembler::push_pop_instruction(string red, int code) // push je 0 pop je 1,
 
     char c1, c2 = '0', c3 = *novi.c_str(), c4 = '6', c5, c6 = '2';
 
-    if (code) // POP
+    if (code)
     {
         c1 = 'A';
         c5 = '4';
     }
-    else // PUSH
+    else
     {
         c1 = 'B';
         c5 = '1';
@@ -1482,6 +1482,7 @@ int Asembler::add_to_symbol_table(Symbol s, bool redefied)
             {
                 tr->isGlobal = true;
                 dodaj = false;
+                this->back_patching(s.name);
                 break;
             }
             else
@@ -1506,6 +1507,7 @@ int Asembler::add_to_symbol_table(Symbol s, bool redefied)
             this->currentSectionNumber = s.number;
         }
         this->symbolTable.push_back(s);
+        this->back_patching(s.name);
     }
 
     return s.number;
@@ -1516,6 +1518,27 @@ void Asembler::print_vector()
     this->output.write(this->for_write.data(), this->for_write.size());
     this->for_write.clear();
     this->locationCounter = 0;
+}
+
+void Asembler::back_patching(string simbol)
+{
+    int val = -1;
+    if (this->backPatching[simbol].typeOfDefinition == 1)
+    {
+        for (auto i : this->symbolTable)
+            if (i.name == simbol)
+                val = i.value;
+        if (val == -1)
+            return;
+        else
+        {
+            char vals[2];
+            itoa(val, vals, 16);
+            char c1 = vals[0], c2 = vals[1];
+            this->for_write[this->backPatching[simbol].locationInCode] = c2;
+            this->for_write[this->backPatching[simbol].locationInCode + 1] = c1;
+        }
+    }
 }
 
 int Asembler::start_reading()

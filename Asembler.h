@@ -114,6 +114,7 @@ private:
     void jump_adressing(string, string &, string &, bool &, char &);
 
     void print_vector();
+    void back_patching(string);
 };
 
 #endif
