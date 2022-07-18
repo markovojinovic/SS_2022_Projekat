@@ -473,8 +473,8 @@ void Asembler::word_function(string red)
                 {
                     this->for_write.push_back(this->nonce);
                     this->for_write.push_back(this->nonce);
-                    int num = this->add_to_symbol_table(Symbol(new_symbol, false, false, this->currentSectionNumber), false);
                     this->backPatching[new_symbol] = Info(this->locationCounter, 1, num);
+                    int num = this->add_to_symbol_table(Symbol(new_symbol, false, false, this->currentSectionNumber), false);
                 }
                 this->locationCounter += 2;
             }
@@ -603,6 +603,14 @@ void Asembler::equ_function(string red)
         this->stopProcess = true;
         return;
     }
+
+    for (auto i = this->symbolTable.begin(); i != this->symbolTable.end(); i++)
+        if (i->name == simbol)
+        {
+            i->value = val;
+            this->back_patching(i->name);
+            return;
+        }
 
     this->add_to_symbol_table(Symbol(simbol, false, false, this->currentSectionNumber, val), false);
 }
@@ -1638,10 +1646,13 @@ void Asembler::back_patching(string simbol)
             return;
         else
         {
-            char vals[2];
-            itoa(val, vals, 16);
+            char vals[5];
+            sprintf(vals, "%X", val);
             char c1 = vals[0], c2 = vals[1];
-            this->for_write[this->backPatching[simbol].locationInCode] = c2;
+            if (val > 15)
+                this->for_write[this->backPatching[simbol].locationInCode] = c2;
+            else
+                this->for_write[this->backPatching[simbol].locationInCode] = '0';
             this->for_write[this->backPatching[simbol].locationInCode + 1] = c1;
         }
     }
