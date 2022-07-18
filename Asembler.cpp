@@ -526,18 +526,21 @@ void Asembler::halt_instruction()
 {
     this->for_write.push_back('0');
     this->for_write.push_back('0');
+    this->locationCounter += 2;
 }
 
 void Asembler::iret_instruction()
 {
     this->for_write.push_back('0');
     this->for_write.push_back('2');
+    this->locationCounter += 2;
 }
 
 void Asembler::ret_instruction()
 {
     this->for_write.push_back('0');
     this->for_write.push_back('4');
+    this->locationCounter += 2;
 }
 
 void Asembler::call_instruction(string red)
@@ -557,6 +560,7 @@ void Asembler::call_instruction(string red)
     this->for_write.push_back('F');
     this->for_write.push_back(sa);
     this->for_write.push_back('0');
+    this->locationCounter += 6;
     if (!one)
     {
         ta = second[0];
@@ -568,6 +572,7 @@ void Asembler::call_instruction(string red)
         else
             this->for_write.push_back('0');
         this->for_write.push_back(ta);
+        this->locationCounter += 2;
     }
 }
 
@@ -586,7 +591,10 @@ void Asembler::data_adressing(string novi, string &first, string &second, bool &
         }
         sa = '0';
         if (regex_match(novi, clasic_literal))
-            first = novi;
+        {
+            first = "F";
+            second = novi;
+        }
         else if (regex_match(novi, clasic_symbol))
         {
             string val = "";
@@ -1221,6 +1229,7 @@ void Asembler::reg_instruction(int fa, int sa, string red)
     else
         this->for_write.push_back('F');
     this->for_write.push_back(*to_string(dest).c_str());
+    this->locationCounter += 4;
 }
 
 void Asembler::jmp_instruction(int fa, string red)
@@ -1259,6 +1268,7 @@ void Asembler::jmp_instruction(int fa, string red)
     this->for_write.push_back('F');
     this->for_write.push_back(sa);
     this->for_write.push_back('0');
+    this->locationCounter += 6;
     if (!one)
     {
         ta = drugi[0];
@@ -1270,6 +1280,7 @@ void Asembler::jmp_instruction(int fa, string red)
         else
             this->for_write.push_back('0');
         this->for_write.push_back(ta);
+        this->locationCounter += 2;
     }
 }
 
@@ -1310,6 +1321,7 @@ void Asembler::ldr_instruction(string red)
         this->for_write.push_back(*first.c_str());
         this->for_write.push_back(sa);
         this->for_write.push_back('0');
+        this->locationCounter += 6;
         if (!(sa == '5' || sa == '2' || sa == '3'))
         {
             ta = drugi[0];
@@ -1321,6 +1333,7 @@ void Asembler::ldr_instruction(string red)
             else
                 this->for_write.push_back('0');
             this->for_write.push_back(ta);
+            this->locationCounter += 2;
         }
     }
 }
@@ -1362,6 +1375,7 @@ void Asembler::str_instruction(string red)
         this->for_write.push_back(*first.c_str());
         this->for_write.push_back(sa);
         this->for_write.push_back('0');
+        this->locationCounter += 6;
         if (!(sa == '5' || sa == '2' || sa == '3'))
         {
             ta = drugi[0];
@@ -1373,6 +1387,7 @@ void Asembler::str_instruction(string red)
             else
                 this->for_write.push_back('0');
             this->for_write.push_back(ta);
+            this->locationCounter += 2;
         }
     }
 }
@@ -1422,6 +1437,7 @@ void Asembler::push_pop_instruction(string red, int code) // push je 0 pop je 1,
     this->for_write.push_back(c3);
     this->for_write.push_back(c6);
     this->for_write.push_back(c5);
+    this->locationCounter += 6;
 }
 
 void Asembler::print_symbol_table()

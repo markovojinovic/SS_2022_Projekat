@@ -73,7 +73,7 @@ regex str_instr_filter("(str)");
 
 regex zvezdica("\\*(.*)");
 regex zvezdica_filter("\\*");
-regex dolar("\\$[a-zA-Z0-9_][0-9]+");
+regex dolar("\\$(.*)");
 regex dolar_filter("\\$");
 regex clasic_literal("[0-9]+");
 regex clasic_symbol("[a-zA-Z0-9_]+");
