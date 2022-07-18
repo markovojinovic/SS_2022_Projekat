@@ -157,6 +157,12 @@ int Asembler::next_instruction()
     case 33:
         push_pop_instruction(red, 1);
         break;
+    case 34:
+        ascii_function(red);
+        break;
+    case 35:
+        equ_function(red);
+        break;
     }
 
     if (rez >= 0)
@@ -238,6 +244,10 @@ int Asembler::get_code_of_instriction(string red)
         return 32;
     if (regex_match(red, regex("(pop)(.*)")))
         return 33;
+    if (regex_match(red, ascii_directive))
+        return 34;
+    if (regex_match(red, equ_directive))
+        return 35;
 
     return -3;
 }
@@ -522,8 +532,90 @@ void Asembler::skip_function(string red)
     }
 }
 
+void Asembler::ascii_function(string red)
+{
+    if (this->currentSection == "")
+    {
+        this->op_code = OUT_OF_SECTION;
+        printError(op_code, line);
+        this->stopProcess = true;
+        return;
+    }
+    string novi = regex_replace(red, ascii_directive_replace, "");
+    novi = regex_replace(novi, regex(" "), "");
+    int kraj = novi.size() - 1;
+    char vals[3];
+
+    for (int i = 1; i < kraj; i++)
+    {
+        int val = novi[i];
+        sprintf(vals, "%X", val);
+        if (vals[1] != 0)
+        {
+            vals[1] = toupper(vals[1]);
+            this->for_write.push_back(vals[1]);
+        }
+        else
+            this->for_write.push_back('0');
+        if (vals[0] != 0)
+        {
+            vals[0] = toupper(vals[0]);
+            this->for_write.push_back(vals[0]);
+        }
+        else
+            this->for_write.push_back('0');
+        this->locationCounter += 2;
+    }
+}
+
+void Asembler::equ_function(string red)
+{
+    if (this->currentSection == "")
+    {
+        this->op_code = OUT_OF_SECTION;
+        printError(op_code, line);
+        this->stopProcess = true;
+        return;
+    }
+    string novi = regex_replace(red, equ_directive_filter, "");
+    novi = regex_replace(novi, regex(" "), "");
+    smatch m;
+    regex_search(novi, m, clasic_symbol);
+    string simbol = m.str(0);
+    novi = m.suffix().str();
+    novi = regex_replace(novi, regex(","), "");
+    string literal = novi;
+    int val = -1;
+    char stampanje[15];
+
+    if (regex_match(literal, decimal_num))
+    {
+        val = stoi(literal);
+    }
+    else if (regex_match(literal, hexa_num))
+    {
+        sscanf(literal.c_str(), "%x", &val);
+    }
+    else
+    {
+        op_code = SINTAX_ERROR;
+        printError(op_code, this->line);
+        this->stopProcess = true;
+        return;
+    }
+
+    this->add_to_symbol_table(Symbol(simbol, false, false, this->currentSectionNumber, val), false);
+}
+
 void Asembler::halt_instruction()
 {
+    if (this->currentSection == "")
+    {
+        this->op_code = OUT_OF_SECTION;
+        printError(op_code, line);
+        this->stopProcess = true;
+        return;
+    }
     this->for_write.push_back('0');
     this->for_write.push_back('0');
     this->locationCounter += 2;
@@ -531,6 +623,13 @@ void Asembler::halt_instruction()
 
 void Asembler::iret_instruction()
 {
+    if (this->currentSection == "")
+    {
+        this->op_code = OUT_OF_SECTION;
+        printError(op_code, line);
+        this->stopProcess = true;
+        return;
+    }
     this->for_write.push_back('0');
     this->for_write.push_back('2');
     this->locationCounter += 2;
@@ -538,6 +637,13 @@ void Asembler::iret_instruction()
 
 void Asembler::ret_instruction()
 {
+    if (this->currentSection == "")
+    {
+        this->op_code = OUT_OF_SECTION;
+        printError(op_code, line);
+        this->stopProcess = true;
+        return;
+    }
     this->for_write.push_back('0');
     this->for_write.push_back('4');
     this->locationCounter += 2;

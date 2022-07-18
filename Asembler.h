@@ -26,7 +26,7 @@ public:
     class Symbol
     {
     public:
-        Symbol(string name, bool isGlobal, bool isSection, int section)
+        Symbol(string name, bool isGlobal, bool isSection, int section, int val = 0)
         {
             this->name = name;
             this->isGlobal = isGlobal;
@@ -36,6 +36,7 @@ public:
                 this->size = -1;
             else
                 this->size = 0;
+            this->value = val;
         }
 
     private:
@@ -96,6 +97,8 @@ private:
     void section_function(string);
     void word_function(string);
     void skip_function(string);
+    void ascii_function(string);
+    void equ_function(string);
 
     void halt_instruction();
     void iret_instruction();

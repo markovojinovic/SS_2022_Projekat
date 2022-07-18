@@ -32,6 +32,10 @@ regex word_directive_replace(".(word)");
 regex skip_directive(".(skip)(.*)");
 regex skip_directive_replace(".(skip)");
 regex end_directive(".(end)");
+regex ascii_directive(".(ascii)(.*)");
+regex ascii_directive_replace(".(ascii)");
+regex equ_directive(".(equ)(.*)");
+regex equ_directive_filter(".(equ)");
 
 regex halt_instr("(halt)");
 regex add_instr("(add)(.*)");
