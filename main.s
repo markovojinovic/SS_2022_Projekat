@@ -8,19 +8,7 @@
 
 .section my_code
 #my_start:
-  ldr r6, $0xFEFE # init SP
   .equ destinations, 10
-
-  ldr r0, $4 # ivt entry number for isr_user0 
-  int r0
-
-  ldr r0, $0
-  push r0
-  ldr r0, $1
-  push r0
-  call mathAdd # pc <= mathAdd
-  str r0, value1
-
   ldr r0, $1
   push r0
   ldr r0, $1

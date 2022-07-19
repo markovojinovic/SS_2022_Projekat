@@ -666,6 +666,13 @@ void Asembler::ret_instruction()
 
 void Asembler::call_instruction(string red)
 {
+    if (this->currentSection == "")
+    {
+        this->op_code = OUT_OF_SECTION;
+        printError(op_code, line);
+        this->stopProcess = true;
+        return;
+    }
     string novi = regex_replace(red, call_instr_filter, "");
     novi = regex_replace(novi, regex(" "), "");
     string first, second;
@@ -1002,6 +1009,7 @@ void Asembler::data_adressing(string novi, string &first, string &second, bool &
 void Asembler::jump_adressing(string novi, string &first, string &second, bool &one, char &sa)
 {
     one = false;
+    first = "F";
     if (regex_match(novi, clasic_literal))
     {
         one = true;
@@ -1380,6 +1388,13 @@ void Asembler::parse_reg_instruction(string red, int &destination, int &source, 
 
 void Asembler::reg_instruction(int fa, int sa, string red)
 {
+    if (this->currentSection == "")
+    {
+        this->op_code = OUT_OF_SECTION;
+        printError(op_code, line);
+        this->stopProcess = true;
+        return;
+    }
     regex filter;
     if (fa == 6 && sa == 0)
     {
@@ -1475,6 +1490,13 @@ void Asembler::reg_instruction(int fa, int sa, string red)
 
 void Asembler::jmp_instruction(int fa, string red)
 {
+    if (this->currentSection == "")
+    {
+        this->op_code = OUT_OF_SECTION;
+        printError(op_code, line);
+        this->stopProcess = true;
+        return;
+    }
     regex filter;
     switch (fa)
     {
@@ -1527,6 +1549,13 @@ void Asembler::jmp_instruction(int fa, string red)
 
 void Asembler::ldr_instruction(string red)
 {
+    if (this->currentSection == "")
+    {
+        this->op_code = OUT_OF_SECTION;
+        printError(op_code, line);
+        this->stopProcess = true;
+        return;
+    }
     string novi = regex_replace(red, ldr_instr_filter, "");
     novi = regex_replace(novi, regex(" "), "");
     string first;
@@ -1569,6 +1598,7 @@ void Asembler::ldr_instruction(string red)
         if (!(sa == '5' || sa == '2' || sa == '3'))
         {
             ta = drugi[0];
+            int n = drugi.size();
             if (drugi.size() > 1)
             {
                 ca = drugi[1];
@@ -1584,6 +1614,13 @@ void Asembler::ldr_instruction(string red)
 
 void Asembler::str_instruction(string red)
 {
+    if (this->currentSection == "")
+    {
+        this->op_code = OUT_OF_SECTION;
+        printError(op_code, line);
+        this->stopProcess = true;
+        return;
+    }
     string novi = regex_replace(red, str_instr_filter, "");
     novi = regex_replace(novi, regex(" "), "");
     string first;
@@ -1641,6 +1678,13 @@ void Asembler::str_instruction(string red)
 
 void Asembler::push_pop_instruction(string red, int code)
 {
+    if (this->currentSection == "")
+    {
+        this->op_code = OUT_OF_SECTION;
+        printError(op_code, line);
+        this->stopProcess = true;
+        return;
+    }
     string novi = regex_replace(red, push_pop_filter, "");
     novi = regex_replace(novi, regex(" "), "");
     if (novi == "")
@@ -1814,7 +1858,9 @@ int Asembler::start_reading()
 
 string Asembler::int_to_hex(int n)
 {
-    char hexaDeciNum[10];
+    if (n == 0)
+        return "00";
+    char hexaDeciNum[] = "0000000000";
     int i = 0;
     while (n != 0)
     {
