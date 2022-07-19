@@ -79,7 +79,7 @@ regex zvezdica("\\*(.*)");
 regex zvezdica_filter("\\*");
 regex dolar("\\$(.*)");
 regex dolar_filter("\\$");
-regex clasic_literal("[0-9]+");
+regex clasic_literal("(0(x|X))*[0-9]+");
 regex clasic_symbol("[a-zA-Z0-9_]+");
 regex percent("\\%(.*)");
 regex percent_filter("\\%");

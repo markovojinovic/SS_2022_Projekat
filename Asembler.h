@@ -118,6 +118,8 @@ private:
 
     void print_vector();
     void back_patching(string);
+
+    string int_to_hex(int);
 };
 
 #endif

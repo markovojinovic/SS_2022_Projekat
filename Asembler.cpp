@@ -2,6 +2,7 @@
 #include "Regexes.h"
 #include "OpCodeErrors.h"
 #include <algorithm>
+#include <sstream>
 
 Asembler::Asembler(string in_name, string out_name)
 {
@@ -53,6 +54,7 @@ int Asembler::next_instruction()
     if (red != "")
     {
         red = regex_replace(red, filter_comment, "");
+        red = regex_replace(red, regex("( )*"), "");
         if (red != "")
             rez = get_code_of_instriction(red);
         else
@@ -427,7 +429,9 @@ void Asembler::word_function(string red)
         {
             if (regex_match(new_symbol, decimal_num))
             {
-                __int16 broj = stoi(new_symbol);
+                __int16 broj;
+                stringstream geek(new_symbol);
+                geek >> broj;
                 __int8 prvi = broj / 10;
                 __int8 drugi = broj % 10;
                 this->for_write.push_back(*to_string(drugi).c_str());
@@ -508,7 +512,9 @@ void Asembler::skip_function(string red)
 
     if (regex_match(novi, hexa_num))
     {
-        int broj = stoi(novi);
+        int broj;
+        stringstream geek(novi);
+        geek >> broj;
         for (int i = 0; i < broj; i++)
         {
             this->for_write.push_back('0');
@@ -590,7 +596,8 @@ void Asembler::equ_function(string red)
 
     if (regex_match(literal, decimal_num))
     {
-        val = stoi(literal);
+        stringstream geek(literal);
+        geek >> val;
     }
     else if (regex_match(literal, hexa_num))
     {
@@ -665,7 +672,7 @@ void Asembler::call_instruction(string red)
     char sa, fa, ta, ca;
     bool one;
 
-    this->data_adressing(novi, first, second, one, sa);
+    this->jump_adressing(novi, first, second, one, sa);
     fa = *first.c_str();
 
     this->for_write.push_back('0');
@@ -704,9 +711,18 @@ void Asembler::data_adressing(string novi, string &first, string &second, bool &
             this->stopProcess = true;
         }
         sa = '0';
-        if (regex_match(novi, clasic_literal))
+        if (regex_match(novi, decimal_num))
         {
             first = "F";
+            stringstream geek(novi);
+            int num;
+            geek >> num;
+            second = this->int_to_hex(num);
+        }
+        else if (regex_match(novi, hexa_num))
+        {
+            first = "F";
+            novi = regex_replace(novi, regex("0(x|X)"), "");
             second = novi;
         }
         else if (regex_match(novi, clasic_symbol))
@@ -736,8 +752,27 @@ void Asembler::data_adressing(string novi, string &first, string &second, bool &
     {
         one = true;
         sa = '4';
-        second = novi;
         first = "F";
+        if (novi == "")
+        {
+            this->op_code = SINTAX_ERROR;
+            printError(op_code, line);
+            this->stopProcess = true;
+        }
+        if (regex_match(novi, decimal_num))
+        {
+            first = "F";
+            stringstream geek(novi);
+            int num;
+            geek >> num;
+            second = this->int_to_hex(num);
+        }
+        else if (regex_match(novi, hexa_num))
+        {
+            first = "F";
+            novi = regex_replace(novi, regex("0(x|X)"), "");
+            second = novi;
+        }
     }
     else if (regex_match(novi, percent))
     {
@@ -794,7 +829,10 @@ void Asembler::data_adressing(string novi, string &first, string &second, bool &
         else
         {
             first = novi;
-            if (stoi(first) > 7 or first.size() > 1)
+            int broj;
+            stringstream geek(first);
+            geek >> broj;
+            if (broj > 7 or broj < 0 or first.size() > 1)
             {
                 this->op_code = REGISTER_OUT_OF_BOUNDS;
                 printError(op_code, line);
@@ -818,7 +856,10 @@ void Asembler::data_adressing(string novi, string &first, string &second, bool &
         else
         {
             first = novi;
-            if (stoi(first) > 7 or first.size() > 1)
+            int broj;
+            stringstream geek(first);
+            geek >> broj;
+            if (broj > 7 or broj < 0 or first.size() > 1)
             {
                 this->op_code = REGISTER_OUT_OF_BOUNDS;
                 printError(op_code, line);
@@ -841,7 +882,10 @@ void Asembler::data_adressing(string novi, string &first, string &second, bool &
         }
         else
         {
-            if (stoi(first) > 7 or first.size() > 1)
+            int broj;
+            stringstream geek(first);
+            geek >> broj;
+            if (broj > 7 or broj < 0 or first.size() > 1)
             {
                 this->op_code = REGISTER_OUT_OF_BOUNDS;
                 printError(op_code, line);
@@ -851,12 +895,26 @@ void Asembler::data_adressing(string novi, string &first, string &second, bool &
             {
                 novi = m.suffix().str();
                 regex_search(novi, m, clasic_literal);
-                second = m.str(0);
-                if (second == "")
+                novi = m.str(0);
+                if (novi == "")
                 {
                     this->op_code = SINTAX_ERROR;
                     printError(op_code, line);
                     this->stopProcess = true;
+                }
+                if (regex_match(novi, decimal_num))
+                {
+                    first = "F";
+                    stringstream geek(novi);
+                    int num;
+                    geek >> num;
+                    second = this->int_to_hex(num);
+                }
+                else if (regex_match(novi, hexa_num))
+                {
+                    first = "F";
+                    novi = regex_replace(novi, regex("0(x|X)"), "");
+                    second = novi;
                 }
             }
         }
@@ -866,7 +924,7 @@ void Asembler::data_adressing(string novi, string &first, string &second, bool &
         sa = '3';
 
         smatch m;
-        regex_search(novi, m, clasic_literal);
+        regex_search(novi, m, clasic_symbol);
         first = m.str(0);
         if (first == "")
         {
@@ -876,7 +934,10 @@ void Asembler::data_adressing(string novi, string &first, string &second, bool &
         }
         else
         {
-            if (stoi(first) > 7 or first.size() > 1)
+            int broj;
+            stringstream geek(first);
+            geek >> broj;
+            if (broj > 7 or broj < 0 or first.size() > 1)
             {
                 this->op_code = REGISTER_OUT_OF_BOUNDS;
                 printError(op_code, line);
@@ -952,7 +1013,26 @@ void Asembler::jump_adressing(string novi, string &first, string &second, bool &
         }
         sa = '0';
         first = "F";
-        second = novi;
+        if (novi == "")
+        {
+            this->op_code = SINTAX_ERROR;
+            printError(op_code, line);
+            this->stopProcess = true;
+        }
+        if (regex_match(novi, decimal_num))
+        {
+            first = "F";
+            stringstream geek(novi);
+            int num;
+            geek >> num;
+            second = this->int_to_hex(num);
+        }
+        else if (regex_match(novi, hexa_num))
+        {
+            first = "F";
+            novi = regex_replace(novi, regex("0(x|X)"), "");
+            second = novi;
+        }
     }
     else if (regex_match(novi, clasic_symbol))
     {
@@ -1031,7 +1111,10 @@ void Asembler::jump_adressing(string novi, string &first, string &second, bool &
             else
             {
                 first = novi;
-                if (stoi(first) > 7 or first.size() > 1)
+                int broj;
+                stringstream geek(first);
+                geek >> broj;
+                if (broj > 7 or broj < 0 or first.size() > 1)
                 {
                     this->op_code = REGISTER_OUT_OF_BOUNDS;
                     printError(op_code, line);
@@ -1055,7 +1138,10 @@ void Asembler::jump_adressing(string novi, string &first, string &second, bool &
             else
             {
                 first = novi;
-                if (stoi(first) > 7 or first.size() > 1)
+                int broj;
+                stringstream geek(first);
+                geek >> broj;
+                if (broj > 7 or broj < 0 or first.size() > 1)
                 {
                     this->op_code = REGISTER_OUT_OF_BOUNDS;
                     printError(op_code, line);
@@ -1078,7 +1164,10 @@ void Asembler::jump_adressing(string novi, string &first, string &second, bool &
             }
             else
             {
-                if (stoi(first) > 7 or first.size() > 1)
+                int broj;
+                stringstream geek(first);
+                geek >> broj;
+                if (broj > 7 or broj < 0 or first.size() > 1)
                 {
                     this->op_code = REGISTER_OUT_OF_BOUNDS;
                     printError(op_code, line);
@@ -1088,12 +1177,26 @@ void Asembler::jump_adressing(string novi, string &first, string &second, bool &
                 {
                     novi = m.suffix().str();
                     regex_search(novi, m, clasic_literal);
-                    second = m.str(0);
-                    if (second == "")
+                    novi = m.str(0);
+                    if (novi == "")
                     {
                         this->op_code = SINTAX_ERROR;
                         printError(op_code, line);
                         this->stopProcess = true;
+                    }
+                    if (regex_match(novi, decimal_num))
+                    {
+                        first = "F";
+                        stringstream geek(novi);
+                        int num;
+                        geek >> num;
+                        second = this->int_to_hex(num);
+                    }
+                    else if (regex_match(novi, hexa_num))
+                    {
+                        first = "F";
+                        novi = regex_replace(novi, regex("0(x|X)"), "");
+                        second = novi;
                     }
                 }
             }
@@ -1103,8 +1206,9 @@ void Asembler::jump_adressing(string novi, string &first, string &second, bool &
             sa = '3';
 
             smatch m;
-            regex_search(novi, m, clasic_literal);
+            regex_search(novi, m, regex("(r|R)[0-9]"));
             first = m.str(0);
+            first = regex_replace(first, regex("(r|R)"), "");
             if (first == "")
             {
                 this->op_code = SINTAX_ERROR;
@@ -1113,7 +1217,10 @@ void Asembler::jump_adressing(string novi, string &first, string &second, bool &
             }
             else
             {
-                if (stoi(first) > 7 or first.size() > 1)
+                int broj;
+                stringstream geek(first);
+                geek >> broj;
+                if (broj > 7 or broj < 0 or first.size() > 1)
                 {
                     this->op_code = REGISTER_OUT_OF_BOUNDS;
                     printError(op_code, line);
@@ -1151,15 +1258,28 @@ void Asembler::jump_adressing(string novi, string &first, string &second, bool &
         else if (regex_match(novi, clasic_literal))
         {
             one = true;
+            sa = '4';
+            first = "F";
             if (novi == "")
             {
                 this->op_code = SINTAX_ERROR;
                 printError(op_code, line);
                 this->stopProcess = true;
             }
-            sa = '4';
-            second = novi;
-            first = "F";
+            if (regex_match(novi, decimal_num))
+            {
+                first = "F";
+                stringstream geek(novi);
+                int num;
+                geek >> num;
+                second = this->int_to_hex(num);
+            }
+            else if (regex_match(novi, hexa_num))
+            {
+                first = "F";
+                novi = regex_replace(novi, regex("0(x|X)"), "");
+                second = novi;
+            }
         }
         else if (regex_match(novi, clasic_symbol))
         {
@@ -1207,7 +1327,8 @@ void Asembler::parse_reg_instruction(string red, int &destination, int &source, 
 
         red = m.suffix().str();
 
-        dest = stoi(new_symbol);
+        stringstream geek(new_symbol);
+        geek >> dest;
         if (dest > 7)
         {
             op_code = REGISTER_OUT_OF_BOUNDS;
@@ -1224,7 +1345,8 @@ void Asembler::parse_reg_instruction(string red, int &destination, int &source, 
                 new_symbol = regex_replace(new_symbol, regex(" "), "");
                 new_symbol = regex_replace(new_symbol, filter_from_add, "");
 
-                src = stoi(new_symbol);
+                stringstream geek(new_symbol);
+                geek >> src;
                 if (src > 7)
                 {
                     op_code = REGISTER_OUT_OF_BOUNDS;
@@ -1373,9 +1495,9 @@ void Asembler::jmp_instruction(int fa, string red)
     string novi = regex_replace(red, filter, "");
     novi = regex_replace(novi, regex(" "), "");
 
-    string prvi, drugi;
-    char sa, ta, ca;
-    bool one;
+    string prvi = "00", drugi = "00";
+    char sa = '0', ta = '0', ca = '0';
+    bool one = false;
     this->jump_adressing(novi, prvi, drugi, one, sa);
 
     this->for_write.push_back(*to_string(fa).c_str());
@@ -1416,7 +1538,10 @@ void Asembler::ldr_instruction(string red)
     novi = regex_replace(novi, regex("( )*\\,"), "");
     first = regex_replace(first, regex("(r|R)"), "");
 
-    if (stoi(first) > 7 || first.size() > 1)
+    int broj;
+    stringstream geek(first);
+    geek >> broj;
+    if (broj > 7 or broj < 0 or first.size() > 1)
     {
         op_code = REGISTER_OUT_OF_BOUNDS;
         printError(op_code, line);
@@ -1425,9 +1550,9 @@ void Asembler::ldr_instruction(string red)
     }
     else
     {
-        string prvi, drugi;
-        char sa;
-        bool one;
+        string prvi = "00", drugi = "00";
+        char sa = '0';
+        bool one = false;
         this->data_adressing(novi, prvi, drugi, one, sa);
 
         char fa = *prvi.c_str(), ta, ca;
@@ -1470,7 +1595,10 @@ void Asembler::str_instruction(string red)
     novi = regex_replace(novi, regex("( )*\\,"), "");
     first = regex_replace(first, regex("(r|R)"), "");
 
-    if (stoi(first) > 7 || first.size() > 1)
+    int broj;
+    stringstream geek(first);
+    geek >> broj;
+    if (broj > 7 or broj < 0 or first.size() > 1)
     {
         op_code = REGISTER_OUT_OF_BOUNDS;
         printError(op_code, line);
@@ -1479,9 +1607,9 @@ void Asembler::str_instruction(string red)
     }
     else
     {
-        string prvi, drugi;
-        char sa;
-        bool one;
+        string prvi = "00", drugi = "00";
+        char sa = '0';
+        bool one = false;
         this->data_adressing(novi, prvi, drugi, one, sa);
 
         char fa = *prvi.c_str(), ta, ca;
@@ -1522,6 +1650,9 @@ void Asembler::push_pop_instruction(string red, int code)
         this->stopProcess = true;
     }
     novi = regex_replace(novi, regex("(r|R)"), "");
+    int broj;
+    stringstream geek(novi);
+    geek >> broj;
     if (novi == "" || isalpha(novi[0]))
     {
         op_code = SINTAX_ERROR;
@@ -1529,7 +1660,7 @@ void Asembler::push_pop_instruction(string red, int code)
         this->stopProcess = true;
         return;
     }
-    else if (stoi(novi) > 7 || novi.size() > 1)
+    else if (broj > 7 or broj < 0 or novi.size() > 1)
     {
         op_code = REGISTER_OUT_OF_BOUNDS;
         printError(op_code, this->line);
@@ -1679,4 +1810,34 @@ int Asembler::start_reading()
         return -1;
     else
         return 1;
+}
+
+string Asembler::int_to_hex(int n)
+{
+    char hexaDeciNum[10];
+    int i = 0;
+    while (n != 0)
+    {
+        int temp = 0;
+        temp = n % 16;
+        if (temp < 10)
+        {
+            hexaDeciNum[i] = temp + 48;
+            i++;
+        }
+        else
+        {
+            hexaDeciNum[i] = temp + 55;
+            i++;
+        }
+        n = n / 16;
+    }
+    string ret = "";
+    for (int i = 0; i < 10; i++)
+        if (hexaDeciNum[i] != '0')
+            ret.push_back(hexaDeciNum[i]);
+        else
+            break;
+
+    return ret;
 }
