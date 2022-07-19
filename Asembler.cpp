@@ -13,6 +13,7 @@ Asembler::Asembler(string in_name, string out_name)
 
     this->line = 0;
     this->locationCounter = 0;
+    this->memoryCounter = 0;
     this->stopProcess = false;
 
     file.open(input_name);
@@ -165,6 +166,9 @@ int Asembler::next_instruction()
     case 35:
         equ_function(red);
         break;
+    case 36:
+        label_function(red);
+        break;
     }
 
     if (rez >= 0)
@@ -250,6 +254,8 @@ int Asembler::get_code_of_instriction(string red)
         return 34;
     if (regex_match(red, equ_directive))
         return 35;
+    if (regex_match(red, label))
+        return 36;
 
     return -3;
 }
@@ -366,8 +372,6 @@ void Asembler::section_function(string red)
         for (auto i = this->symbolTable.rbegin(); i != this->symbolTable.rend(); i++)
             if (i->name == this->currentSection)
                 i->size = this->locationCounter;
-
-        this->print_vector();
     }
 
     string novi = regex_replace(red, section_directive_replace, "");
@@ -429,23 +433,40 @@ void Asembler::word_function(string red)
         {
             if (regex_match(new_symbol, decimal_num))
             {
-                __int16 broj;
                 stringstream geek(new_symbol);
-                geek >> broj;
-                __int8 prvi = broj / 10;
-                __int8 drugi = broj % 10;
-                this->for_write.push_back(*to_string(drugi).c_str());
-                this->for_write.push_back(*to_string(prvi).c_str());
-                this->locationCounter += 2;
+                int num;
+                geek >> num;
+                new_symbol = this->int_to_hex(num);
+                char c1 = new_symbol[0], c2 = '0', c3 = '0', c4 = '0';
+                if (new_symbol.size() >= 2)
+                    c2 = new_symbol[1];
+                if (new_symbol.size() >= 3)
+                    c3 = new_symbol[2];
+                if (new_symbol.size() >= 4)
+                    c4 = new_symbol[3];
+                this->for_write.push_back(c2);
+                this->for_write.push_back(c1);
+                this->for_write.push_back(c4);
+                this->for_write.push_back(c3);
+                this->locationCounter += 4;
+                this->memoryCounter += 4;
             }
             else if (regex_match(new_symbol, hexa_num))
             {
-                __int16 x = std::stoul(new_symbol, nullptr, 16);
-                __int8 prvi = x / 10;
-                __int8 drugi = x % 10;
-                this->for_write.push_back(*to_string(drugi).c_str());
-                this->for_write.push_back(*to_string(prvi).c_str());
-                this->locationCounter += 2;
+                new_symbol = regex_replace(new_symbol, regex("0(x|X)"), "");
+                char c1 = new_symbol[0], c2 = '0', c3 = '0', c4 = '0';
+                if (new_symbol.size() >= 2)
+                    c2 = new_symbol[1];
+                if (new_symbol.size() >= 3)
+                    c3 = new_symbol[2];
+                if (new_symbol.size() >= 4)
+                    c4 = new_symbol[3];
+                this->for_write.push_back(c2);
+                this->for_write.push_back(c1);
+                this->for_write.push_back(c4);
+                this->for_write.push_back(c3);
+                this->locationCounter += 4;
+                this->memoryCounter += 4;
             }
             else if (regex_match(new_symbol, symbol))
             {
@@ -469,18 +490,23 @@ void Asembler::word_function(string red)
 
                 if (val != -1)
                 {
-                    this->for_write.push_back(*to_string(val & 0xff).c_str());
-                    this->for_write.push_back(*to_string((val >> 8) & 0xff).c_str());
-                    this->backPatching[new_symbol] = Info(this->locationCounter, 1, num);
+                    this->for_write.push_back(*to_string(val & 0xf).c_str());
+                    this->for_write.push_back(*to_string((val >> 4) & 0xf).c_str());
+                    this->for_write.push_back(*to_string((val >> 4) & 0xf).c_str());
+                    this->for_write.push_back(*to_string((val >> 4) & 0xf).c_str());
+                    this->backPatching.push_back(Info(new_symbol, this->locationCounter, this->memoryCounter, 1, num));
                 }
                 else
                 {
                     this->for_write.push_back(this->nonce);
                     this->for_write.push_back(this->nonce);
-                    this->backPatching[new_symbol] = Info(this->locationCounter, 1, num);
+                    this->for_write.push_back(this->nonce);
+                    this->for_write.push_back(this->nonce);
+                    this->backPatching.push_back(Info(new_symbol, this->locationCounter, this->memoryCounter, 1, num));
                     int num = this->add_to_symbol_table(Symbol(new_symbol, false, false, this->currentSectionNumber), false);
                 }
-                this->locationCounter += 2;
+                this->locationCounter += 4;
+                this->memoryCounter += 4;
             }
         }
 
@@ -571,6 +597,7 @@ void Asembler::ascii_function(string red)
         else
             this->for_write.push_back('0');
         this->locationCounter += 2;
+        this->memoryCounter += 2;
     }
 }
 
@@ -622,6 +649,21 @@ void Asembler::equ_function(string red)
     this->add_to_symbol_table(Symbol(simbol, false, false, this->currentSectionNumber, val), false);
 }
 
+void Asembler::label_function(string red)
+{
+    red = regex_replace(red, regex(":"), "");
+
+    for (auto i = this->symbolTable.begin(); i != this->symbolTable.end(); i++)
+        if (i->name == red)
+        {
+            i->value = this->memoryCounter;
+
+            return;
+        }
+
+    this->add_to_symbol_table(Symbol(red, false, false, this->currentSectionNumber, this->memoryCounter), false);
+}
+
 void Asembler::halt_instruction()
 {
     if (this->currentSection == "")
@@ -634,6 +676,7 @@ void Asembler::halt_instruction()
     this->for_write.push_back('0');
     this->for_write.push_back('0');
     this->locationCounter += 2;
+    this->memoryCounter += 2;
 }
 
 void Asembler::iret_instruction()
@@ -648,6 +691,7 @@ void Asembler::iret_instruction()
     this->for_write.push_back('0');
     this->for_write.push_back('2');
     this->locationCounter += 2;
+    this->memoryCounter += 2;
 }
 
 void Asembler::ret_instruction()
@@ -662,6 +706,7 @@ void Asembler::ret_instruction()
     this->for_write.push_back('0');
     this->for_write.push_back('4');
     this->locationCounter += 2;
+    this->memoryCounter += 2;
 }
 
 void Asembler::call_instruction(string red)
@@ -675,8 +720,8 @@ void Asembler::call_instruction(string red)
     }
     string novi = regex_replace(red, call_instr_filter, "");
     novi = regex_replace(novi, regex(" "), "");
-    string first, second;
-    char sa, fa, ta, ca;
+    string first = "00", second = "00";
+    char sa = '0', fa = '0', ta = '0', ca = '0';
     bool one;
 
     this->jump_adressing(novi, first, second, one, sa);
@@ -689,6 +734,7 @@ void Asembler::call_instruction(string red)
     this->for_write.push_back(sa);
     this->for_write.push_back('0');
     this->locationCounter += 6;
+    this->memoryCounter += 6;
     if (!one)
     {
         char c1 = '0', c2 = '0', c3 = '0', c4 = '0';
@@ -705,6 +751,7 @@ void Asembler::call_instruction(string red)
         this->for_write.push_back(c4);
         this->for_write.push_back(c3);
         this->locationCounter += 4;
+        this->memoryCounter += 4;
     }
 }
 
@@ -745,9 +792,8 @@ void Asembler::data_adressing(string novi, string &first, string &second, bool &
                     val = to_string(tr.value);
             if (val == "")
             {
-                this->op_code = UNDEFINDE_SYMBOL;
-                printError(op_code, line);
-                this->stopProcess = true;
+                second = "RRRR";
+                this->backPatching.push_back(Info(novi, this->locationCounter, this->memoryCounter, 1, this->currentSectionNumber));
             }
             else
                 second = val;
@@ -817,9 +863,8 @@ void Asembler::data_adressing(string novi, string &first, string &second, bool &
                         val = to_string(tr.value);
                 if (val == "")
                 {
-                    this->op_code = UNDEFINDE_SYMBOL;
-                    printError(op_code, line);
-                    this->stopProcess = true;
+                    second = "RRRR";
+                    this->backPatching.push_back(Info(second, this->locationCounter, this->memoryCounter, 1, this->currentSectionNumber));
                 }
                 else
                     second = val;
@@ -973,9 +1018,8 @@ void Asembler::data_adressing(string novi, string &first, string &second, bool &
                             val = to_string(tr.value);
                     if (val == "")
                     {
-                        this->op_code = UNDEFINDE_SYMBOL;
-                        printError(op_code, line);
-                        this->stopProcess = true;
+                        second = "RRRR";
+                        this->backPatching.push_back(Info(second, this->locationCounter, this->memoryCounter, 1, this->currentSectionNumber));
                     }
                     else
                         second = val;
@@ -995,9 +1039,8 @@ void Asembler::data_adressing(string novi, string &first, string &second, bool &
                 val = to_string(tr.value);
         if (val == "")
         {
-            this->op_code = UNDEFINDE_SYMBOL;
-            printError(op_code, line);
-            this->stopProcess = true;
+            second = "RRRR";
+            this->backPatching.push_back(Info(novi, this->locationCounter, this->memoryCounter, 1, this->currentSectionNumber));
         }
         else
             second = val;
@@ -1057,9 +1100,8 @@ void Asembler::jump_adressing(string novi, string &first, string &second, bool &
                 val = to_string(tr.value);
         if (val == "")
         {
-            this->op_code = UNDEFINDE_SYMBOL;
-            printError(op_code, line);
-            this->stopProcess = true;
+            second = "RRRR";
+            this->backPatching.push_back(Info(novi, this->locationCounter, this->memoryCounter, 1, this->currentSectionNumber));
         }
         else
             second = val;
@@ -1096,9 +1138,8 @@ void Asembler::jump_adressing(string novi, string &first, string &second, bool &
                         val = to_string(tr.value);
                 if (val == "")
                 {
-                    this->op_code = UNDEFINDE_SYMBOL;
-                    printError(op_code, line);
-                    this->stopProcess = true;
+                    second = "RRRR";
+                    this->backPatching.push_back(Info(second, this->locationCounter, this->memoryCounter, 1, this->currentSectionNumber));
                 }
                 else
                     second = val;
@@ -1257,9 +1298,8 @@ void Asembler::jump_adressing(string novi, string &first, string &second, bool &
                                 val = to_string(tr.value);
                         if (val == "")
                         {
-                            this->op_code = UNDEFINDE_SYMBOL;
-                            printError(op_code, line);
-                            this->stopProcess = true;
+                            second = "RRRR";
+                            this->backPatching.push_back(Info(second, this->locationCounter, this->memoryCounter, 1, this->currentSectionNumber));
                         }
                         else
                             second = val;
@@ -1304,9 +1344,8 @@ void Asembler::jump_adressing(string novi, string &first, string &second, bool &
                     val = to_string(tr.value);
             if (val == "")
             {
-                this->op_code = UNDEFINDE_SYMBOL;
-                printError(op_code, line);
-                this->stopProcess = true;
+                second = "RRRR";
+                this->backPatching.push_back(Info(novi, this->locationCounter, this->memoryCounter, 1, this->currentSectionNumber));
             }
             else
                 second = val;
@@ -1490,6 +1529,7 @@ void Asembler::reg_instruction(int fa, int sa, string red)
         this->for_write.push_back('F');
     this->for_write.push_back(*to_string(dest).c_str());
     this->locationCounter += 4;
+    this->memoryCounter += 4;
 }
 
 void Asembler::jmp_instruction(int fa, string red)
@@ -1536,6 +1576,7 @@ void Asembler::jmp_instruction(int fa, string red)
     this->for_write.push_back(sa);
     this->for_write.push_back('0');
     this->locationCounter += 6;
+    this->memoryCounter += 6;
     if (!one)
     {
         char c1 = '0', c2 = '0', c3 = '0', c4 = '0';
@@ -1552,6 +1593,7 @@ void Asembler::jmp_instruction(int fa, string red)
         this->for_write.push_back(c4);
         this->for_write.push_back(c3);
         this->locationCounter += 4;
+        this->memoryCounter += 4;
     }
 }
 
@@ -1603,6 +1645,7 @@ void Asembler::ldr_instruction(string red)
         this->for_write.push_back(sa);
         this->for_write.push_back('0');
         this->locationCounter += 6;
+        this->memoryCounter += 6;
         if (!(sa == '5' || sa == '2' || sa == '3'))
         {
             char c1 = '0', c2 = '0', c3 = '0', c4 = '0';
@@ -1619,6 +1662,7 @@ void Asembler::ldr_instruction(string red)
             this->for_write.push_back(c4);
             this->for_write.push_back(c3);
             this->locationCounter += 4;
+            this->memoryCounter += 4;
         }
     }
 }
@@ -1671,6 +1715,7 @@ void Asembler::str_instruction(string red)
         this->for_write.push_back(sa);
         this->for_write.push_back('0');
         this->locationCounter += 6;
+        this->memoryCounter += 6;
         if (!(sa == '5' || sa == '2' || sa == '3'))
         {
             char c1 = '0', c2 = '0', c3 = '0', c4 = '0';
@@ -1687,6 +1732,7 @@ void Asembler::str_instruction(string red)
             this->for_write.push_back(c4);
             this->for_write.push_back(c3);
             this->locationCounter += 4;
+            this->memoryCounter += 4;
         }
     }
 }
@@ -1747,10 +1793,13 @@ void Asembler::push_pop_instruction(string red, int code)
     this->for_write.push_back(c6);
     this->for_write.push_back(c5);
     this->locationCounter += 6;
+    this->memoryCounter += 6;
 }
 
 void Asembler::print_symbol_table()
 {
+    this->print_vector();
+
     cout << endl
          << endl;
     cout << "=========================================Symbol Table==============================================" << endl;
@@ -1770,11 +1819,16 @@ void Asembler::print_symbol_table()
     cout << "---------------------------------------------------------------------------------------------------" << endl;
     cout << endl
          << endl;
+    cout << "Location counter: " << this->locationCounter << endl;
+    cout << "Memory counter: " << this->memoryCounter << endl;
+    cout << endl
+         << endl;
 }
 
 int Asembler::add_to_symbol_table(Symbol s, bool redefied)
 {
     bool dodaj = true;
+    this->back_patching(s.name);
 
     for (auto tr = this->symbolTable.rbegin(); tr != this->symbolTable.rend(); tr++)
     {
@@ -1806,6 +1860,7 @@ int Asembler::add_to_symbol_table(Symbol s, bool redefied)
         if (s.isSection)
         {
             s.seciton = s.number;
+            s.value = -1;
             this->locationCounter = 0;
             this->currentSection = s.name;
             this->currentSectionNumber = s.number;
@@ -1827,23 +1882,38 @@ void Asembler::print_vector()
 void Asembler::back_patching(string simbol)
 {
     int val = -1;
-    if (this->backPatching[simbol].typeOfDefinition == 1)
+    for (auto a : this->symbolTable)
+        if (a.name == simbol)
+            val = a.value;
+    if (val == -1)
+        return;
+    for (auto i = this->backPatching.begin(); i != this->backPatching.end(); i++)
     {
-        for (auto i : this->symbolTable)
-            if (i.name == simbol)
-                val = i.value;
-        if (val == -1)
-            return;
-        else
+        string name = i->name;
+        if (i->name == simbol && !(i->writted) && i->typeOfDefinition == 1 && i->locationInMemory < this->for_write.size())
         {
             char vals[5];
             sprintf(vals, "%X", val);
-            char c1 = vals[0], c2 = vals[1];
+            char c1 = vals[0], c2 = '0', c3 = '0', c4 = '0';
             if (val > 15)
-                this->for_write[this->backPatching[simbol].locationInCode] = c2;
-            else
-                this->for_write[this->backPatching[simbol].locationInCode] = '0';
-            this->for_write[this->backPatching[simbol].locationInCode + 1] = c1;
+                c2 = vals[1];
+            if (val > 255)
+                c3 = vals[2];
+            if (val > 4095)
+                c4 = vals[3];
+            int mem = this->memoryCounter;
+            int loc = i->locationInMemory;
+            int size = this->for_write.size();
+            string name = i->name;
+            if (this->for_write[i->locationInMemory] == 'R')
+                this->for_write[i->locationInMemory] = c2;
+            if (this->for_write[i->locationInMemory + 1] == 'R')
+                this->for_write[i->locationInMemory + 1] = c1;
+            if (this->for_write[i->locationInMemory + 2] == 'R')
+                this->for_write[i->locationInMemory + 2] = c4;
+            if (this->for_write[i->locationInMemory + 3] == 'R')
+                this->for_write[i->locationInMemory + 3] = c3;
+            i->writted = true;
         }
     }
 }

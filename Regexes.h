@@ -10,6 +10,7 @@ regex direktives(".+");
 regex comments("([^#]*)#.*");
 regex filter_comment("(#)(.*)");
 regex tab("\\t");
+regex label("[a-zA-Z][a-zA-Z0-9_]*\\:");
 
 regex decimal_num("-?[0-9]+");
 regex hexa_num("^(0x([0-9]|[A-F])+)$");

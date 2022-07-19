@@ -54,18 +54,32 @@ public:
     class Info
     {
     public:
-        Info() {}
-        Info(int location, int type, int num)
+        Info()
+        {
+            this->locationInCode = 0;
+            this->typeOfDefinition = 0;
+            this->numberInSybolTable = 0;
+            this->locationInMemory = 0;
+            this->name = "";
+            this->writted = false;
+        }
+        Info(string name, int location, int mem, int type, int num)
         {
             this->locationInCode = location;
             this->typeOfDefinition = type;
             this->numberInSybolTable = num;
+            this->locationInMemory = mem;
+            this->name = name;
+            this->writted = false;
         }
 
     private:
         int locationInCode;
+        int locationInMemory;
         int typeOfDefinition;
         int numberInSybolTable;
+        string name;
+        bool writted;
 
         friend class Asembler;
     };
@@ -74,6 +88,7 @@ private:
     int op_code;
     int line;
     int locationCounter;
+    int memoryCounter;
     int currentSectionNumber;
     bool stopProcess;
     ifstream file;
@@ -85,7 +100,7 @@ private:
     list<string> extern_;
     list<Symbol> symbolTable;
     vector<char> for_write;
-    unordered_map<string, Info> backPatching;
+    list<Info> backPatching;
 
     char nonce = 'R';
 
@@ -99,6 +114,8 @@ private:
     void skip_function(string);
     void ascii_function(string);
     void equ_function(string);
+
+    void label_function(string);
 
     void halt_instruction();
     void iret_instruction();

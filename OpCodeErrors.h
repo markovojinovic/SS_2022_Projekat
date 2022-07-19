@@ -13,7 +13,7 @@ const int OUT_OF_SECTION = -7;
 const int DOT_START = -9;
 const int SINTAX_ERROR = -10;
 const int REGISTER_OUT_OF_BOUNDS = -11;
-const int UNDEFINDE_SYMBOL = -12;
+const int UNDEFINED_SYMBOL = -12;
 
 // EROOR SCHEMA
 
@@ -60,7 +60,7 @@ void printError(int code, int line)
         cout << "Operation code: " << code << " = Registar nije u opsegu od 0 do 7!!!" << endl;
         cout << "Line: " << line << endl;
         break;
-    case UNDEFINDE_SYMBOL:
+    case UNDEFINED_SYMBOL:
         cout << "Operation code: " << code << " = Simbol nije definisan!!!" << endl;
         cout << "Line: " << line << endl;
         break;
