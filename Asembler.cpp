@@ -1628,7 +1628,7 @@ void Asembler::str_instruction(string red)
     smatch m;
     regex_search(novi, m, register_adressing);
     first = m.str(0);
-    novi = regex_replace(novi, register_adressing, "");
+    novi = m.suffix().str();
     novi = regex_replace(novi, regex("( )*\\,"), "");
     first = regex_replace(first, regex("(r|R)"), "");
 
