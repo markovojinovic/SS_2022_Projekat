@@ -793,7 +793,7 @@ void Asembler::data_adressing(string novi, string &first, string &second, bool &
             if (val == "")
             {
                 second = "RRRR";
-                this->backPatching.push_back(Info(novi, this->locationCounter, this->memoryCounter, 1, this->currentSectionNumber));
+                this->backPatching.push_back(Info(novi, this->locationCounter, this->memoryCounter + 6, 1, this->currentSectionNumber));
             }
             else
                 second = val;
@@ -863,8 +863,8 @@ void Asembler::data_adressing(string novi, string &first, string &second, bool &
                         val = to_string(tr.value);
                 if (val == "")
                 {
+                    this->backPatching.push_back(Info(second, this->locationCounter, this->memoryCounter + 6, 1, this->currentSectionNumber));
                     second = "RRRR";
-                    this->backPatching.push_back(Info(second, this->locationCounter, this->memoryCounter, 1, this->currentSectionNumber));
                 }
                 else
                     second = val;
@@ -1018,8 +1018,8 @@ void Asembler::data_adressing(string novi, string &first, string &second, bool &
                             val = to_string(tr.value);
                     if (val == "")
                     {
+                        this->backPatching.push_back(Info(second, this->locationCounter, this->memoryCounter + 6, 1, this->currentSectionNumber));
                         second = "RRRR";
-                        this->backPatching.push_back(Info(second, this->locationCounter, this->memoryCounter, 1, this->currentSectionNumber));
                     }
                     else
                         second = val;
@@ -1040,7 +1040,7 @@ void Asembler::data_adressing(string novi, string &first, string &second, bool &
         if (val == "")
         {
             second = "RRRR";
-            this->backPatching.push_back(Info(novi, this->locationCounter, this->memoryCounter, 1, this->currentSectionNumber));
+            this->backPatching.push_back(Info(novi, this->locationCounter, this->memoryCounter + 6, 1, this->currentSectionNumber));
         }
         else
             second = val;
@@ -1101,7 +1101,7 @@ void Asembler::jump_adressing(string novi, string &first, string &second, bool &
         if (val == "")
         {
             second = "RRRR";
-            this->backPatching.push_back(Info(novi, this->locationCounter, this->memoryCounter, 1, this->currentSectionNumber));
+            this->backPatching.push_back(Info(novi, this->locationCounter, this->memoryCounter + 6, 1, this->currentSectionNumber));
         }
         else
             second = val;
@@ -1138,8 +1138,8 @@ void Asembler::jump_adressing(string novi, string &first, string &second, bool &
                         val = to_string(tr.value);
                 if (val == "")
                 {
+                    this->backPatching.push_back(Info(second, this->locationCounter, this->memoryCounter + 6, 1, this->currentSectionNumber));
                     second = "RRRR";
-                    this->backPatching.push_back(Info(second, this->locationCounter, this->memoryCounter, 1, this->currentSectionNumber));
                 }
                 else
                     second = val;
@@ -1298,8 +1298,8 @@ void Asembler::jump_adressing(string novi, string &first, string &second, bool &
                                 val = to_string(tr.value);
                         if (val == "")
                         {
+                            this->backPatching.push_back(Info(second, this->locationCounter, this->memoryCounter + 6, 1, this->currentSectionNumber));
                             second = "RRRR";
-                            this->backPatching.push_back(Info(second, this->locationCounter, this->memoryCounter, 1, this->currentSectionNumber));
                         }
                         else
                             second = val;
@@ -1345,7 +1345,7 @@ void Asembler::jump_adressing(string novi, string &first, string &second, bool &
             if (val == "")
             {
                 second = "RRRR";
-                this->backPatching.push_back(Info(novi, this->locationCounter, this->memoryCounter, 1, this->currentSectionNumber));
+                this->backPatching.push_back(Info(novi, this->locationCounter, this->memoryCounter + 6, 1, this->currentSectionNumber));
             }
             else
                 second = val;
@@ -1828,7 +1828,6 @@ void Asembler::print_symbol_table()
 int Asembler::add_to_symbol_table(Symbol s, bool redefied)
 {
     bool dodaj = true;
-    this->back_patching(s.name);
 
     for (auto tr = this->symbolTable.rbegin(); tr != this->symbolTable.rend(); tr++)
     {
@@ -1888,8 +1887,6 @@ void Asembler::back_patching(string simbol)
     if (val == -1)
         return;
     for (auto i = this->backPatching.begin(); i != this->backPatching.end(); i++)
-    {
-        string name = i->name;
         if (i->name == simbol && !(i->writted) && i->typeOfDefinition == 1 && i->locationInMemory < this->for_write.size())
         {
             char vals[5];
@@ -1901,21 +1898,18 @@ void Asembler::back_patching(string simbol)
                 c3 = vals[2];
             if (val > 4095)
                 c4 = vals[3];
-            int mem = this->memoryCounter;
-            int loc = i->locationInMemory;
-            int size = this->for_write.size();
-            string name = i->name;
+
             if (this->for_write[i->locationInMemory] == 'R')
-                this->for_write[i->locationInMemory] = c2;
+                this->for_write[i->locationInMemory] = c3;
             if (this->for_write[i->locationInMemory + 1] == 'R')
-                this->for_write[i->locationInMemory + 1] = c1;
+                this->for_write[i->locationInMemory + 1] = c4;
             if (this->for_write[i->locationInMemory + 2] == 'R')
-                this->for_write[i->locationInMemory + 2] = c4;
+                this->for_write[i->locationInMemory + 2] = c2;
             if (this->for_write[i->locationInMemory + 3] == 'R')
-                this->for_write[i->locationInMemory + 3] = c3;
+                this->for_write[i->locationInMemory + 3] = c1;
+
             i->writted = true;
         }
-    }
 }
 
 int Asembler::start_reading()

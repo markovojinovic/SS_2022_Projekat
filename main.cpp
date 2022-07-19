@@ -19,6 +19,7 @@ int main(int argc, char *argv[])
     //     cout << "Nedefinisana ulazna komanda" << endl;
     // }
 
+    cout << endl;
     Asembler as("main.s", "main.o");
     if (as.start_reading() == 1)
     {
