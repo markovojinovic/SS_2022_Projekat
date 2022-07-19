@@ -691,16 +691,20 @@ void Asembler::call_instruction(string red)
     this->locationCounter += 6;
     if (!one)
     {
-        ta = second[0];
-        if (second.size() > 1)
-        {
-            ca = second[1];
-            this->for_write.push_back(ca);
-        }
-        else
-            this->for_write.push_back('0');
-        this->for_write.push_back(ta);
-        this->locationCounter += 2;
+        char c1 = '0', c2 = '0', c3 = '0', c4 = '0';
+        if (second.size() >= 1)
+            c1 = second[0];
+        if (second.size() >= 2)
+            c2 = second[1];
+        if (second.size() >= 3)
+            c3 = second[2];
+        if (second.size() >= 4)
+            c4 = second[3];
+        this->for_write.push_back(c2);
+        this->for_write.push_back(c1);
+        this->for_write.push_back(c4);
+        this->for_write.push_back(c3);
+        this->locationCounter += 4;
     }
 }
 
@@ -1534,16 +1538,20 @@ void Asembler::jmp_instruction(int fa, string red)
     this->locationCounter += 6;
     if (!one)
     {
-        ta = drugi[0];
-        if (drugi.size() > 1)
-        {
-            ca = drugi[1];
-            this->for_write.push_back(ca);
-        }
-        else
-            this->for_write.push_back('0');
-        this->for_write.push_back(ta);
-        this->locationCounter += 2;
+        char c1 = '0', c2 = '0', c3 = '0', c4 = '0';
+        if (drugi.size() >= 1)
+            c1 = drugi[0];
+        if (drugi.size() >= 2)
+            c2 = drugi[1];
+        if (drugi.size() >= 3)
+            c3 = drugi[2];
+        if (drugi.size() >= 4)
+            c4 = drugi[3];
+        this->for_write.push_back(c2);
+        this->for_write.push_back(c1);
+        this->for_write.push_back(c4);
+        this->for_write.push_back(c3);
+        this->locationCounter += 4;
     }
 }
 
@@ -1556,14 +1564,14 @@ void Asembler::ldr_instruction(string red)
         this->stopProcess = true;
         return;
     }
-    string novi = regex_replace(red, ldr_instr_filter, "");
+    string novi = regex_replace(red, str_instr_filter, "");
     novi = regex_replace(novi, regex(" "), "");
     string first;
 
     smatch m;
     regex_search(novi, m, register_adressing);
     first = m.str(0);
-    novi = regex_replace(novi, regex("(r|R)[0-9]+\\,"), "");
+    novi = m.suffix().str();
     novi = regex_replace(novi, regex("( )*\\,"), "");
     first = regex_replace(first, regex("(r|R)"), "");
 
@@ -1597,17 +1605,20 @@ void Asembler::ldr_instruction(string red)
         this->locationCounter += 6;
         if (!(sa == '5' || sa == '2' || sa == '3'))
         {
-            ta = drugi[0];
-            int n = drugi.size();
-            if (drugi.size() > 1)
-            {
-                ca = drugi[1];
-                this->for_write.push_back(ca);
-            }
-            else
-                this->for_write.push_back('0');
-            this->for_write.push_back(ta);
-            this->locationCounter += 2;
+            char c1 = '0', c2 = '0', c3 = '0', c4 = '0';
+            if (drugi.size() >= 1)
+                c1 = drugi[0];
+            if (drugi.size() >= 2)
+                c2 = drugi[1];
+            if (drugi.size() >= 3)
+                c3 = drugi[2];
+            if (drugi.size() >= 4)
+                c4 = drugi[3];
+            this->for_write.push_back(c2);
+            this->for_write.push_back(c1);
+            this->for_write.push_back(c4);
+            this->for_write.push_back(c3);
+            this->locationCounter += 4;
         }
     }
 }
@@ -1662,16 +1673,20 @@ void Asembler::str_instruction(string red)
         this->locationCounter += 6;
         if (!(sa == '5' || sa == '2' || sa == '3'))
         {
-            ta = drugi[0];
-            if (drugi.size() > 1)
-            {
-                ca = drugi[1];
-                this->for_write.push_back(ca);
-            }
-            else
-                this->for_write.push_back('0');
-            this->for_write.push_back(ta);
-            this->locationCounter += 2;
+            char c1 = '0', c2 = '0', c3 = '0', c4 = '0';
+            if (drugi.size() >= 1)
+                c1 = drugi[0];
+            if (drugi.size() >= 2)
+                c2 = drugi[1];
+            if (drugi.size() >= 3)
+                c3 = drugi[2];
+            if (drugi.size() >= 4)
+                c4 = drugi[3];
+            this->for_write.push_back(c2);
+            this->for_write.push_back(c1);
+            this->for_write.push_back(c4);
+            this->for_write.push_back(c3);
+            this->locationCounter += 4;
         }
     }
 }
