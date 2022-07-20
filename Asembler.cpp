@@ -801,7 +801,7 @@ void Asembler::data_adressing(string novi, string &first, string &second, bool &
             if (val == "")
             {
                 second = "RRRR";
-                this->backPatching.push_back(Info(novi, this->locationCounter, this->memoryCounter + 6, 1, this->currentSectionNumber));
+                this->backPatching.push_back(Info(novi, this->locationCounter, this->memoryCounter, 1, this->currentSectionNumber));
             }
             else
                 second = val;
@@ -871,7 +871,7 @@ void Asembler::data_adressing(string novi, string &first, string &second, bool &
                         val = to_string(tr.value);
                 if (val == "")
                 {
-                    this->backPatching.push_back(Info(second, this->locationCounter, this->memoryCounter + 6, 1, this->currentSectionNumber));
+                    this->backPatching.push_back(Info(second, this->locationCounter, this->memoryCounter, 1, this->currentSectionNumber));
                     second = "RRRR";
                 }
                 else
@@ -1026,7 +1026,7 @@ void Asembler::data_adressing(string novi, string &first, string &second, bool &
                             val = to_string(tr.value);
                     if (val == "")
                     {
-                        this->backPatching.push_back(Info(second, this->locationCounter, this->memoryCounter + 6, 1, this->currentSectionNumber));
+                        this->backPatching.push_back(Info(second, this->locationCounter, this->memoryCounter, 1, this->currentSectionNumber));
                         second = "RRRR";
                     }
                     else
@@ -1048,7 +1048,7 @@ void Asembler::data_adressing(string novi, string &first, string &second, bool &
         if (val == "")
         {
             second = "RRRR";
-            this->backPatching.push_back(Info(novi, this->locationCounter, this->memoryCounter + 6, 1, this->currentSectionNumber));
+            this->backPatching.push_back(Info(novi, this->locationCounter, this->memoryCounter, 1, this->currentSectionNumber));
         }
         else
             second = val;
@@ -1109,7 +1109,7 @@ void Asembler::jump_adressing(string novi, string &first, string &second, bool &
         if (val == "")
         {
             second = "RRRR";
-            this->backPatching.push_back(Info(novi, this->locationCounter, this->memoryCounter + 6, 1, this->currentSectionNumber));
+            this->backPatching.push_back(Info(novi, this->locationCounter, this->memoryCounter, 1, this->currentSectionNumber));
         }
         else
             second = val;
@@ -1146,7 +1146,7 @@ void Asembler::jump_adressing(string novi, string &first, string &second, bool &
                         val = to_string(tr.value);
                 if (val == "")
                 {
-                    this->backPatching.push_back(Info(second, this->locationCounter, this->memoryCounter + 6, 1, this->currentSectionNumber));
+                    this->backPatching.push_back(Info(second, this->locationCounter, this->memoryCounter, 1, this->currentSectionNumber));
                     second = "RRRR";
                 }
                 else
@@ -1306,7 +1306,7 @@ void Asembler::jump_adressing(string novi, string &first, string &second, bool &
                                 val = to_string(tr.value);
                         if (val == "")
                         {
-                            this->backPatching.push_back(Info(second, this->locationCounter, this->memoryCounter + 6, 1, this->currentSectionNumber));
+                            this->backPatching.push_back(Info(second, this->locationCounter, this->memoryCounter, 1, this->currentSectionNumber));
                             second = "RRRR";
                         }
                         else
@@ -1353,7 +1353,7 @@ void Asembler::jump_adressing(string novi, string &first, string &second, bool &
             if (val == "")
             {
                 second = "RRRR";
-                this->backPatching.push_back(Info(novi, this->locationCounter, this->memoryCounter + 6, 1, this->currentSectionNumber));
+                this->backPatching.push_back(Info(novi, this->locationCounter, this->memoryCounter, 1, this->currentSectionNumber));
             }
             else
                 second = val;
