@@ -444,10 +444,10 @@ void Asembler::word_function(string red)
                     c3 = new_symbol[2];
                 if (new_symbol.size() >= 4)
                     c4 = new_symbol[3];
-                this->for_write.push_back(c2);
-                this->for_write.push_back(c1);
-                this->for_write.push_back(c4);
                 this->for_write.push_back(c3);
+                this->for_write.push_back(c4);
+                this->for_write.push_back(c1);
+                this->for_write.push_back(c2);
                 this->locationCounter += 4;
                 this->memoryCounter += 4;
             }
@@ -461,10 +461,10 @@ void Asembler::word_function(string red)
                     c3 = new_symbol[2];
                 if (new_symbol.size() >= 4)
                     c4 = new_symbol[3];
-                this->for_write.push_back(c2);
-                this->for_write.push_back(c1);
-                this->for_write.push_back(c4);
                 this->for_write.push_back(c3);
+                this->for_write.push_back(c4);
+                this->for_write.push_back(c1);
+                this->for_write.push_back(c2);
                 this->locationCounter += 4;
                 this->memoryCounter += 4;
             }
@@ -479,7 +479,7 @@ void Asembler::word_function(string red)
                         if (tr.isGlobal)
                         {
                             num = tr.number;
-                            val = 0;
+                            val = 0; // TODO: kad se veze sa linkerom i ovde treba da se pokupi vrednost
                         }
                         else
                         {
@@ -490,10 +490,18 @@ void Asembler::word_function(string red)
 
                 if (val != -1)
                 {
-                    this->for_write.push_back(*to_string(val & 0xf).c_str());
-                    this->for_write.push_back(*to_string((val >> 4) & 0xf).c_str());
-                    this->for_write.push_back(*to_string((val >> 4) & 0xf).c_str());
-                    this->for_write.push_back(*to_string((val >> 4) & 0xf).c_str());
+                    string upis = this->int_to_hex(val);
+                    char c1 = upis[0], c2 = '0', c3 = '0', c4 = '0';
+                    if (upis.size() >= 2)
+                        c2 = upis[1];
+                    if (upis.size() >= 3)
+                        c3 = upis[2];
+                    if (upis.size() >= 4)
+                        c4 = upis[3];
+                    this->for_write.push_back(c3);
+                    this->for_write.push_back(c4);
+                    this->for_write.push_back(c1);
+                    this->for_write.push_back(c2);
                     this->backPatching.push_back(Info(new_symbol, this->locationCounter, this->memoryCounter, 1, num));
                 }
                 else
@@ -536,24 +544,24 @@ void Asembler::skip_function(string red)
         return;
     }
 
-    if (regex_match(novi, hexa_num))
-    {
-        int broj;
-        stringstream geek(novi);
-        geek >> broj;
-        for (int i = 0; i < broj; i++)
-        {
-            this->for_write.push_back('0');
-            this->locationCounter++;
-        }
-    }
-    else if (regex_match(novi, decimal_num))
+    if (regex_match(novi, hexa_num)) // TODO istestirati
     {
         int broj = std::stoul(novi, nullptr, 16);
         for (int i = 0; i < broj; i++)
         {
             this->for_write.push_back('0');
             this->locationCounter++;
+            this->memoryCounter++;
+        }
+    }
+    else if (regex_match(novi, decimal_num)) // TODO istestirati
+    {
+        int broj = std::stoul(novi, nullptr, 10);
+        for (int i = 0; i < broj; i++)
+        {
+            this->for_write.push_back('0');
+            this->locationCounter++;
+            this->memoryCounter++;
         }
     }
     else
@@ -578,21 +586,21 @@ void Asembler::ascii_function(string red)
     int kraj = novi.size() - 1;
     char vals[3];
 
-    for (int i = 1; i < kraj; i++)
+    for (int i = kraj; i > 0; i--)
     {
         int val = novi[i];
         sprintf(vals, "%X", val);
-        if (vals[1] != 0)
-        {
-            vals[1] = toupper(vals[1]);
-            this->for_write.push_back(vals[1]);
-        }
-        else
-            this->for_write.push_back('0');
         if (vals[0] != 0)
         {
             vals[0] = toupper(vals[0]);
             this->for_write.push_back(vals[0]);
+        }
+        else
+            this->for_write.push_back('0');
+        if (vals[1] != 0)
+        {
+            vals[1] = toupper(vals[1]);
+            this->for_write.push_back(vals[1]);
         }
         else
             this->for_write.push_back('0');
@@ -688,8 +696,8 @@ void Asembler::iret_instruction()
         this->stopProcess = true;
         return;
     }
-    this->for_write.push_back('0');
     this->for_write.push_back('2');
+    this->for_write.push_back('0');
     this->locationCounter += 2;
     this->memoryCounter += 2;
 }
@@ -703,8 +711,8 @@ void Asembler::ret_instruction()
         this->stopProcess = true;
         return;
     }
-    this->for_write.push_back('0');
     this->for_write.push_back('4');
+    this->for_write.push_back('0');
     this->locationCounter += 2;
     this->memoryCounter += 2;
 }
@@ -727,14 +735,6 @@ void Asembler::call_instruction(string red)
     this->jump_adressing(novi, first, second, one, sa);
     fa = *first.c_str();
 
-    this->for_write.push_back('0');
-    this->for_write.push_back('3');
-    this->for_write.push_back(fa);
-    this->for_write.push_back('F');
-    this->for_write.push_back(sa);
-    this->for_write.push_back('0');
-    this->locationCounter += 6;
-    this->memoryCounter += 6;
     if (!one)
     {
         char c1 = '0', c2 = '0', c3 = '0', c4 = '0';
@@ -746,13 +746,21 @@ void Asembler::call_instruction(string red)
             c3 = second[2];
         if (second.size() >= 4)
             c4 = second[3];
-        this->for_write.push_back(c2);
-        this->for_write.push_back(c1);
-        this->for_write.push_back(c4);
         this->for_write.push_back(c3);
+        this->for_write.push_back(c4);
+        this->for_write.push_back(c1);
+        this->for_write.push_back(c2);
         this->locationCounter += 4;
         this->memoryCounter += 4;
     }
+    this->for_write.push_back('0');
+    this->for_write.push_back(sa);
+    this->for_write.push_back('F');
+    this->for_write.push_back(fa);
+    this->for_write.push_back('3');
+    this->for_write.push_back('0');
+    this->locationCounter += 6;
+    this->memoryCounter += 6;
 }
 
 void Asembler::data_adressing(string novi, string &first, string &second, bool &one, char &sa)
@@ -1515,19 +1523,17 @@ void Asembler::reg_instruction(int fa, int sa, string red)
     this->parse_reg_instruction(novi, dest, src, flag);
 
     if (this->stopProcess)
-    {
         return;
-    }
 
-    this->for_write.push_back(*to_string(sa).c_str());
-    this->for_write.push_back(*to_string(fa).c_str());
+    this->for_write.push_back(*to_string(dest).c_str());
     if (!flag)
         this->for_write.push_back(*to_string(src).c_str());
     else if (fa != 1)
         this->for_write.push_back('0');
     else
         this->for_write.push_back('F');
-    this->for_write.push_back(*to_string(dest).c_str());
+    this->for_write.push_back(*to_string(fa).c_str());
+    this->for_write.push_back(*to_string(sa).c_str());
     this->locationCounter += 4;
     this->memoryCounter += 4;
 }
@@ -1566,17 +1572,6 @@ void Asembler::jmp_instruction(int fa, string red)
     bool one = false;
     this->jump_adressing(novi, prvi, drugi, one, sa);
 
-    this->for_write.push_back(*to_string(fa).c_str());
-    this->for_write.push_back('5');
-    if (sa == '1' || sa == '2' || sa == '3' || sa == '5')
-        this->for_write.push_back(*prvi.c_str());
-    else
-        this->for_write.push_back('F');
-    this->for_write.push_back('F');
-    this->for_write.push_back(sa);
-    this->for_write.push_back('0');
-    this->locationCounter += 6;
-    this->memoryCounter += 6;
     if (!one)
     {
         char c1 = '0', c2 = '0', c3 = '0', c4 = '0';
@@ -1588,13 +1583,24 @@ void Asembler::jmp_instruction(int fa, string red)
             c3 = drugi[2];
         if (drugi.size() >= 4)
             c4 = drugi[3];
-        this->for_write.push_back(c2);
-        this->for_write.push_back(c1);
-        this->for_write.push_back(c4);
         this->for_write.push_back(c3);
+        this->for_write.push_back(c4);
+        this->for_write.push_back(c1);
+        this->for_write.push_back(c2);
         this->locationCounter += 4;
         this->memoryCounter += 4;
     }
+    this->for_write.push_back('0');
+    this->for_write.push_back(sa);
+    this->for_write.push_back('F');
+    if (sa == '1' || sa == '2' || sa == '3' || sa == '5')
+        this->for_write.push_back(*prvi.c_str());
+    else
+        this->for_write.push_back('F');
+    this->for_write.push_back('5');
+    this->for_write.push_back(*to_string(fa).c_str());
+    this->locationCounter += 6;
+    this->memoryCounter += 6;
 }
 
 void Asembler::ldr_instruction(string red)
@@ -1635,17 +1641,7 @@ void Asembler::ldr_instruction(string red)
         this->data_adressing(novi, prvi, drugi, one, sa);
 
         char fa = *prvi.c_str(), ta, ca;
-        this->for_write.push_back('0');
-        this->for_write.push_back('A');
-        if (sa == '5' || sa == '2' || sa == '3')
-            this->for_write.push_back(fa);
-        else
-            this->for_write.push_back('F');
-        this->for_write.push_back(*first.c_str());
-        this->for_write.push_back(sa);
-        this->for_write.push_back('0');
-        this->locationCounter += 6;
-        this->memoryCounter += 6;
+
         if (!(sa == '5' || sa == '2' || sa == '3'))
         {
             char c1 = '0', c2 = '0', c3 = '0', c4 = '0';
@@ -1664,6 +1660,17 @@ void Asembler::ldr_instruction(string red)
             this->locationCounter += 4;
             this->memoryCounter += 4;
         }
+        this->for_write.push_back('0');
+        this->for_write.push_back(sa);
+        this->for_write.push_back(*first.c_str());
+        if (sa == '5' || sa == '2' || sa == '3')
+            this->for_write.push_back(fa);
+        else
+            this->for_write.push_back('F');
+        this->for_write.push_back('A');
+        this->for_write.push_back('0');
+        this->locationCounter += 6;
+        this->memoryCounter += 6;
     }
 }
 
@@ -1705,17 +1712,7 @@ void Asembler::str_instruction(string red)
         this->data_adressing(novi, prvi, drugi, one, sa);
 
         char fa = *prvi.c_str(), ta, ca;
-        this->for_write.push_back('0');
-        this->for_write.push_back('B');
-        if (sa == '5' || sa == '2' || sa == '3')
-            this->for_write.push_back(fa);
-        else
-            this->for_write.push_back('F');
-        this->for_write.push_back(*first.c_str());
-        this->for_write.push_back(sa);
-        this->for_write.push_back('0');
-        this->locationCounter += 6;
-        this->memoryCounter += 6;
+
         if (!(sa == '5' || sa == '2' || sa == '3'))
         {
             char c1 = '0', c2 = '0', c3 = '0', c4 = '0';
@@ -1727,13 +1724,25 @@ void Asembler::str_instruction(string red)
                 c3 = drugi[2];
             if (drugi.size() >= 4)
                 c4 = drugi[3];
-            this->for_write.push_back(c2);
-            this->for_write.push_back(c1);
-            this->for_write.push_back(c4);
             this->for_write.push_back(c3);
+            this->for_write.push_back(c4);
+            this->for_write.push_back(c1);
+            this->for_write.push_back(c2);
             this->locationCounter += 4;
             this->memoryCounter += 4;
         }
+        this->for_write.push_back('0');
+        this->for_write.push_back(sa);
+        this->for_write.push_back(*first.c_str());
+        if (sa == '5' || sa == '2' || sa == '3')
+            this->for_write.push_back(fa);
+        else
+            this->for_write.push_back('F');
+        this->for_write.push_back('B');
+        this->for_write.push_back('0');
+
+        this->locationCounter += 6;
+        this->memoryCounter += 6;
     }
 }
 
@@ -1786,12 +1795,12 @@ void Asembler::push_pop_instruction(string red, int code)
         c5 = '1';
     }
 
-    this->for_write.push_back(c2);
-    this->for_write.push_back(c1);
-    this->for_write.push_back(c4);
-    this->for_write.push_back(c3);
-    this->for_write.push_back(c6);
     this->for_write.push_back(c5);
+    this->for_write.push_back(c6);
+    this->for_write.push_back(c3);
+    this->for_write.push_back(c4);
+    this->for_write.push_back(c1);
+    this->for_write.push_back(c2);
     this->locationCounter += 6;
     this->memoryCounter += 6;
 }
@@ -1958,11 +1967,12 @@ string Asembler::int_to_hex(int n)
         n = n / 16;
     }
     string ret = "";
-    for (int i = 0; i < 10; i++)
-        if (hexaDeciNum[i] != '0')
-            ret.push_back(hexaDeciNum[i]);
-        else
-            break;
+    int pos = 10;
+    for (int i = 9; i > 0; i--)
+        if (hexaDeciNum[i] == '0')
+            pos--;
+    for (int i = pos - 1; i >= 0; i--)
+        ret.push_back(hexaDeciNum[i]);
 
     return ret;
 }
