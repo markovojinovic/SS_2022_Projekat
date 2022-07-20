@@ -804,7 +804,10 @@ void Asembler::data_adressing(string novi, string &first, string &second, bool &
                 this->backPatching.push_back(Info(novi, this->locationCounter, this->memoryCounter, 1, this->currentSectionNumber));
             }
             else
+            {
                 second = val;
+                this->backPatching.push_back(Info(novi, this->locationCounter, this->memoryCounter, 1, this->currentSectionNumber));
+            }
         }
         else
         {
@@ -871,11 +874,14 @@ void Asembler::data_adressing(string novi, string &first, string &second, bool &
                         val = to_string(tr.value);
                 if (val == "")
                 {
-                    this->backPatching.push_back(Info(second, this->locationCounter, this->memoryCounter, 1, this->currentSectionNumber));
+                    this->backPatching.push_back(Info(second, this->locationCounter, this->memoryCounter, 0, this->currentSectionNumber));
                     second = "RRRR";
                 }
                 else
+                {
                     second = val;
+                    this->backPatching.push_back(Info(novi, this->locationCounter, this->memoryCounter, 0, this->currentSectionNumber));
+                }
             }
         }
     }
@@ -1030,7 +1036,10 @@ void Asembler::data_adressing(string novi, string &first, string &second, bool &
                         second = "RRRR";
                     }
                     else
+                    {
                         second = val;
+                        this->backPatching.push_back(Info(novi, this->locationCounter, this->memoryCounter, 1, this->currentSectionNumber));
+                    }
                 }
             }
         }
@@ -1051,7 +1060,10 @@ void Asembler::data_adressing(string novi, string &first, string &second, bool &
             this->backPatching.push_back(Info(novi, this->locationCounter, this->memoryCounter, 1, this->currentSectionNumber));
         }
         else
+        {
             second = val;
+            this->backPatching.push_back(Info(novi, this->locationCounter, this->memoryCounter, 1, this->currentSectionNumber));
+        }
     }
     else
     {
@@ -1112,7 +1124,10 @@ void Asembler::jump_adressing(string novi, string &first, string &second, bool &
             this->backPatching.push_back(Info(novi, this->locationCounter, this->memoryCounter, 1, this->currentSectionNumber));
         }
         else
+        {
             second = val;
+            this->backPatching.push_back(Info(novi, this->locationCounter, this->memoryCounter, 1, this->currentSectionNumber));
+        }
     }
     else if (regex_match(novi, percent))
     {
@@ -1146,11 +1161,14 @@ void Asembler::jump_adressing(string novi, string &first, string &second, bool &
                         val = to_string(tr.value);
                 if (val == "")
                 {
-                    this->backPatching.push_back(Info(second, this->locationCounter, this->memoryCounter, 1, this->currentSectionNumber));
+                    this->backPatching.push_back(Info(second, this->locationCounter, this->memoryCounter, 0, this->currentSectionNumber));
                     second = "RRRR";
                 }
                 else
+                {
                     second = val;
+                    this->backPatching.push_back(Info(novi, this->locationCounter, this->memoryCounter, 0, this->currentSectionNumber));
+                }
             }
         }
     }
@@ -1310,7 +1328,10 @@ void Asembler::jump_adressing(string novi, string &first, string &second, bool &
                             second = "RRRR";
                         }
                         else
+                        {
                             second = val;
+                            this->backPatching.push_back(Info(novi, this->locationCounter, this->memoryCounter, 1, this->currentSectionNumber));
+                        }
                     }
                 }
             }
@@ -1356,7 +1377,10 @@ void Asembler::jump_adressing(string novi, string &first, string &second, bool &
                 this->backPatching.push_back(Info(novi, this->locationCounter, this->memoryCounter, 1, this->currentSectionNumber));
             }
             else
+            {
                 second = val;
+                this->backPatching.push_back(Info(novi, this->locationCounter, this->memoryCounter, 1, this->currentSectionNumber));
+            }
         }
         else
         {
@@ -1908,13 +1932,13 @@ void Asembler::back_patching(string simbol)
             if (val > 4095)
                 c4 = vals[3];
 
-            if (this->for_write[i->locationInMemory] == 'R')
+            if (this->for_write[i->locationInMemory] == nonce)
                 this->for_write[i->locationInMemory] = c3;
-            if (this->for_write[i->locationInMemory + 1] == 'R')
+            if (this->for_write[i->locationInMemory + 1] == nonce)
                 this->for_write[i->locationInMemory + 1] = c4;
-            if (this->for_write[i->locationInMemory + 2] == 'R')
+            if (this->for_write[i->locationInMemory + 2] == nonce)
                 this->for_write[i->locationInMemory + 2] = c2;
-            if (this->for_write[i->locationInMemory + 3] == 'R')
+            if (this->for_write[i->locationInMemory + 3] == nonce)
                 this->for_write[i->locationInMemory + 3] = c1;
 
             i->writted = true;

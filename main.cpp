@@ -4,8 +4,6 @@
 
 using namespace std;
 
-// TODO: Proveriti upisivanje i adresiranje
-
 int main(int argc, char *argv[])
 {
     // if (strcmp(argv[1], "-o") == 0)
@@ -35,5 +33,4 @@ int main(int argc, char *argv[])
     return 0;
 }
 
-// 1:03:44
-// 1:18:05
+// 1:29:56

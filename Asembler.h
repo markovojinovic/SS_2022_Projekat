@@ -21,8 +21,6 @@ public:
     void print_symbol_table();
     int start_reading();
 
-    // Kada se bude pisao backpatching ako se naidje na RR vrednosti u kodu tada se manja vrednost novom vrednoscu promenljive, u suprotnom ne
-
     class Symbol
     {
     public:
