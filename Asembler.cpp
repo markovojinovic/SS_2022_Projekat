@@ -882,7 +882,7 @@ void Asembler::data_adressing(string novi, string &first, string &second, bool &
     else if (regex_match(novi, register_adressing))
     {
         one = true;
-        sa = '5';
+        sa = '1';
         novi = regex_replace(novi, filter_from_add, "");
         if (novi == "")
         {
