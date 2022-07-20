@@ -1,7 +1,11 @@
 #include "asembler.h"
 #include <iostream>
 #include <regex>
+
 using namespace std;
+
+// TODO: Proveriti upisivanje i adresiranje
+
 int main(int argc, char *argv[])
 {
     // if (strcmp(argv[1], "-o") == 0)
