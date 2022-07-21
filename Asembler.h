@@ -100,7 +100,9 @@ private:
     vector<char> for_write;
     list<Info> backPatching;
 
-    char nonce = 'R';
+    const char nonce = 'R';
+    const int pc_reg = 7;
+    const int sp_reg = 6;
 
     int next_instruction();
     int get_code_of_instriction(string);

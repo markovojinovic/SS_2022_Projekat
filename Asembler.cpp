@@ -57,7 +57,11 @@ int Asembler::next_instruction()
         red = regex_replace(red, filter_comment, "");
         red = regex_replace(red, regex("( )*"), "");
         if (red != "")
+        {
+            red = regex_replace(red, regex("pc"), "r7");
+            red = regex_replace(red, regex("sp"), "r6");
             rez = get_code_of_instriction(red);
+        }
         else
             return 1;
     }
@@ -1399,7 +1403,7 @@ void Asembler::jump_adressing(string novi, string &first, string &second, bool &
 
 void Asembler::parse_reg_instruction(string red, int &destination, int &source, bool one_read)
 {
-    int dest, src;
+    int dest = -1, src = -1;
     smatch m;
 
     if (regex_search(red, m, filter_from_instruction))
