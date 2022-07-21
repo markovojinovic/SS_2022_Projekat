@@ -61,7 +61,7 @@ public:
             this->name = "";
             this->writted = false;
         }
-        Info(string name, int location, int mem, int type, int num)
+        Info(string name, int location, int mem, int type, int num, string izr = "")
         {
             this->locationInCode = location;
             this->typeOfDefinition = type;
@@ -69,6 +69,7 @@ public:
             this->locationInMemory = mem;
             this->name = name;
             this->writted = false;
+            this->izraz = izr;
         }
 
     private:
@@ -77,6 +78,7 @@ public:
         int typeOfDefinition;
         int numberInSybolTable;
         string name;
+        string izraz;
         bool writted;
 
         friend class Asembler;
@@ -137,6 +139,9 @@ private:
     void back_patching(string);
 
     string int_to_hex(int);
+
+public:
+    int str_to_val(string);
 };
 
 #endif

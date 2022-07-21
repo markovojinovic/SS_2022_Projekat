@@ -3,6 +3,7 @@
 #include "OpCodeErrors.h"
 #include <algorithm>
 #include <sstream>
+#include <bits/stdc++.h>
 
 Asembler::Asembler(string in_name, string out_name)
 {
@@ -548,7 +549,7 @@ void Asembler::skip_function(string red)
         return;
     }
 
-    if (regex_match(novi, hexa_num)) // TODO istestirati
+    if (regex_match(novi, hexa_num))
     {
         int broj = std::stoul(novi, nullptr, 16);
         for (int i = 0; i < broj; i++)
@@ -558,7 +559,7 @@ void Asembler::skip_function(string red)
             this->memoryCounter++;
         }
     }
-    else if (regex_match(novi, decimal_num)) // TODO istestirati
+    else if (regex_match(novi, decimal_num))
     {
         int broj = std::stoul(novi, nullptr, 10);
         for (int i = 0; i < broj; i++)
@@ -615,13 +616,6 @@ void Asembler::ascii_function(string red)
 
 void Asembler::equ_function(string red)
 {
-    if (this->currentSection == "")
-    {
-        this->op_code = OUT_OF_SECTION;
-        printError(op_code, line);
-        this->stopProcess = true;
-        return;
-    }
     string novi = regex_replace(red, equ_directive_filter, "");
     novi = regex_replace(novi, regex(" "), "");
     smatch m;
@@ -629,35 +623,47 @@ void Asembler::equ_function(string red)
     string simbol = m.str(0);
     novi = m.suffix().str();
     novi = regex_replace(novi, regex(","), "");
-    string literal = novi;
     int val = -1;
-    char stampanje[15];
-
-    if (regex_match(literal, decimal_num))
+    if (regex_match(novi, decimal_num))
     {
-        stringstream geek(literal);
+        stringstream geek(novi);
         geek >> val;
     }
-    else if (regex_match(literal, hexa_num))
+    else if (regex_match(novi, hexa_num))
     {
-        sscanf(literal.c_str(), "%x", &val);
+        sscanf(novi.c_str(), "%x", &val);
     }
     else
     {
-        op_code = SINTAX_ERROR;
-        printError(op_code, this->line);
-        this->stopProcess = true;
-        return;
-    }
-
-    for (auto i = this->symbolTable.begin(); i != this->symbolTable.end(); i++)
-        if (i->name == simbol)
+        bool ima = false;
+        for (auto a : this->symbolTable)
+            if (a.name == simbol)
+                ima = true;
+        while (regex_search(novi, m, clasic_symbol))
         {
-            i->value = val;
-            this->back_patching(i->name);
+            string simboll = m.str(0);
+            int vall = -1;
+            bool fali = false;
+            for (auto a : this->symbolTable)
+                if (a.name == simboll)
+                    vall = a.value;
+            if (vall == -1)
+            {
+                cout << "Greska se desila" << endl; // TODO: zavrsiti
+                return;
+            }
+            else
+            {
+                novi = regex_replace(novi, regex(simboll), to_string(vall));
+            }
+        }
+        val = this->str_to_val(novi);
+        if (ima)
+        {
+            this->add_to_symbol_table(Symbol(simbol, false, false, this->currentSectionNumber, val), true);
             return;
         }
-
+    }
     this->add_to_symbol_table(Symbol(simbol, false, false, this->currentSectionNumber, val), false);
 }
 
@@ -998,7 +1004,7 @@ void Asembler::data_adressing(string novi, string &first, string &second, bool &
         sa = '3';
 
         smatch m;
-        regex_search(novi, m, clasic_symbol);
+        regex_search(novi, m, register_adressing);
         first = m.str(0);
         if (first == "")
         {
@@ -1009,6 +1015,7 @@ void Asembler::data_adressing(string novi, string &first, string &second, bool &
         else
         {
             int broj;
+            first = regex_replace(first, regex("(r|R)"), "");
             stringstream geek(first);
             geek >> broj;
             if (broj > 7 or broj < 0 or first.size() > 1)
@@ -1924,6 +1931,7 @@ void Asembler::back_patching(string simbol)
     if (val == -1)
         return;
     for (auto i = this->backPatching.begin(); i != this->backPatching.end(); i++)
+    {
         if (i->name == simbol && !(i->writted) && i->typeOfDefinition == 1 && i->locationInMemory < this->for_write.size())
         {
             char vals[5];
@@ -1947,6 +1955,10 @@ void Asembler::back_patching(string simbol)
 
             i->writted = true;
         }
+        if (i->name == simbol && !(i->writted) && i->typeOfDefinition == 3 && i->locationInMemory < this->for_write.size())
+        {
+        }
+    }
 }
 
 int Asembler::start_reading()
@@ -2003,4 +2015,83 @@ string Asembler::int_to_hex(int n)
         ret.push_back(hexaDeciNum[i]);
 
     return ret;
+}
+
+int Asembler::str_to_val(string izraz)
+{
+    if (izraz == "")
+        return 0;
+    string xxx; // Get Rid of Spaces
+    for (int i = 0; i < izraz.length(); i++)
+    {
+        if (izraz[i] != ' ')
+        {
+            xxx += izraz[i];
+        }
+    }
+
+    string tok = ""; // Do parantheses first
+    for (int i = 0; i < xxx.length(); i++)
+    {
+        if (xxx[i] == '(')
+        {
+            int iter = 1;
+            string token;
+            i++;
+            while (true)
+            {
+                if (xxx[i] == '(')
+                {
+                    iter++;
+                }
+                else if (xxx[i] == ')')
+                {
+                    iter--;
+                    if (iter == 0)
+                    {
+                        i++;
+                        break;
+                    }
+                }
+                token += xxx[i];
+                i++;
+            }
+            // cout << "(" << token << ")" << " == " << to_string(eval(token)) <<  endl;
+            tok += to_string(str_to_val(token));
+        }
+        tok += xxx[i];
+    }
+
+    for (int i = 0; i < tok.length(); i++)
+    {
+        if (tok[i] == '+')
+        {
+            // cout << tok.substr(0, i) + " + " +  tok.substr(i+1, tok.length()-i-1) << " == " << eval(tok.substr(0, i)) + eval(tok.substr(i+1, tok.length()-i-1)) << endl;
+            return str_to_val(tok.substr(0, i)) + str_to_val(tok.substr(i + 1, tok.length() - i - 1));
+        }
+        else if (tok[i] == '-')
+        {
+            // cout << tok.substr(0, i) + " - " +  tok.substr(i+1, tok.length()-i-1) << " == " << eval(tok.substr(0, i)) - eval(tok.substr(i+1, tok.length()-i-1)) << endl;
+            return str_to_val(tok.substr(0, i)) - str_to_val(tok.substr(i + 1, tok.length() - i - 1));
+        }
+    }
+
+    for (int i = 0; i < tok.length(); i++)
+    {
+        if (tok[i] == '*')
+        {
+            // cout << tok.substr(0, i) + " * " +  tok.substr(i+1, tok.length()-i-1) << " == " << eval(tok.substr(0, i)) * eval(tok.substr(i+1, tok.length()-i-1)) << endl;
+            return str_to_val(tok.substr(0, i)) * str_to_val(tok.substr(i + 1, tok.length() - i - 1));
+        }
+        else if (tok[i] == '/')
+        {
+            // cout << tok.substr(0, i) + " / " +  tok.substr(i+1, tok.length()-i-1) << " == " << eval(tok.substr(0, i)) / eval(tok.substr(i+1, tok.length()-i-1)) << endl;
+            return str_to_val(tok.substr(0, i)) / str_to_val(tok.substr(i + 1, tok.length() - i - 1));
+        }
+    }
+
+    // cout << stod(tok.c_str()) << endl;
+    if (tok == "")
+        return 0;
+    return stod(tok.c_str()); // Return the value...
 }

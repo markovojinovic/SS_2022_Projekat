@@ -17,7 +17,7 @@ regex sp("(sp)");
 regex pc("(pc)");
 
 regex decimal_num("-?[0-9]+");
-regex hexa_num("^(0x([0-9]|[A-F])+)$");
+regex hexa_num("^(0(x|X)([0-9]|[A-Fa-f])+)$");
 regex symbol("[a-zA-Z][a-zA-Z0-9_]*");
 regex reg_num("[0-7]");
 
@@ -85,7 +85,7 @@ regex zvezdica_filter("\\*");
 regex dolar("\\$(.*)");
 regex dolar_filter("\\$");
 regex clasic_literal("(0(x|X))*[0-9]+");
-regex clasic_symbol("[a-zA-Z0-9_]+");
+regex clasic_symbol("[a-zA-Z][a-zA-Z0-9_]+");
 regex percent("\\%(.*)");
 regex percent_filter("\\%");
 regex register_adressing("(r|R)[0-9]+");
