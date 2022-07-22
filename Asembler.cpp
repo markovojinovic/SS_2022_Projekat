@@ -649,7 +649,8 @@ void Asembler::equ_function(string red)
                     vall = a.value;
             if (vall == -1)
             {
-                cout << "Greska se desila" << endl; // TODO: zavrsiti
+                int num = this->add_to_symbol_table(Symbol(simbol, false, false, this->currentSectionNumber, -3), false);
+                this->backPatching.push_back(Info(simbol, this->locationCounter, num, 3, num, novi));
                 return;
             }
             else
@@ -1883,7 +1884,6 @@ int Asembler::add_to_symbol_table(Symbol s, bool redefied)
             {
                 tr->isGlobal = true;
                 dodaj = false;
-                this->back_patching(s.name);
                 break;
             }
             else
@@ -1908,9 +1908,15 @@ int Asembler::add_to_symbol_table(Symbol s, bool redefied)
             this->currentSection = s.name;
             this->currentSectionNumber = s.number;
         }
+        if (s.value == -3) // TODO: razresiti slucaj backpatchinga sa linije 20 asm fajla
+        {
+            s.another = true;
+            this->backPatching.push_back(Info(s.name, s.number, s.number, 1));
+        }
+
         this->symbolTable.push_back(s);
-        this->back_patching(s.name);
     }
+    this->back_patching(s.name);
 
     return s.number;
 }
@@ -1924,24 +1930,24 @@ void Asembler::print_vector()
 
 void Asembler::back_patching(string simbol)
 {
-    int val = -1;
+    int value = -1;
     for (auto a : this->symbolTable)
         if (a.name == simbol)
-            val = a.value;
-    if (val == -1)
+            value = a.value;
+    if (value == -1)
         return;
     for (auto i = this->backPatching.begin(); i != this->backPatching.end(); i++)
     {
         if (i->name == simbol && !(i->writted) && i->typeOfDefinition == 1 && i->locationInMemory < this->for_write.size())
         {
             char vals[5];
-            sprintf(vals, "%X", val);
+            sprintf(vals, "%X", value);
             char c1 = vals[0], c2 = '0', c3 = '0', c4 = '0';
-            if (val > 15)
+            if (value > 15)
                 c2 = vals[1];
-            if (val > 255)
+            if (value > 255)
                 c3 = vals[2];
-            if (val > 4095)
+            if (value > 4095)
                 c4 = vals[3];
 
             if (this->for_write[i->locationInMemory] == nonce)
@@ -1955,8 +1961,43 @@ void Asembler::back_patching(string simbol)
 
             i->writted = true;
         }
-        if (i->name == simbol && !(i->writted) && i->typeOfDefinition == 3 && i->locationInMemory < this->for_write.size())
+        if (!(i->writted) && i->typeOfDefinition == 3 && i->locationInMemory < this->for_write.size())
         {
+            string name = i->name;
+            smatch m;
+            int val;
+            bool break_ = false;
+            while (regex_search(i->izraz, m, clasic_symbol))
+            {
+                string simboll = m.str(0);
+                int vall = -1;
+                bool fali = false;
+                for (auto a : this->symbolTable)
+                    if (a.name == simboll)
+                        vall = a.value;
+                if (vall == -1)
+                {
+                    break_ = true;
+                    break;
+                }
+                else
+                {
+                    i->izraz = regex_replace(i->izraz, regex(simboll), to_string(vall));
+                }
+            }
+            if (break_)
+                continue;
+            val = this->str_to_val(i->izraz);
+            auto tr = this->symbolTable.begin();
+            for (tr = this->symbolTable.begin(); tr != this->symbolTable.end(); tr++)
+                if (tr->number == i->numberInSybolTable)
+                {
+                    string ime = tr->name;
+                    tr->value = val;
+                    break;
+                }
+            i->writted = true;
+            int vred = tr->value;
         }
     }
 }

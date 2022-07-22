@@ -35,6 +35,7 @@ public:
             else
                 this->size = 0;
             this->value = val;
+            this->another = false;
         }
 
     private:
@@ -43,6 +44,7 @@ public:
         int value;
         bool isGlobal;
         bool isSection;
+        bool another;
         int number;
         int size;
 
