@@ -1950,9 +1950,9 @@ void Asembler::back_patching(string simbol)
             if (this->for_write[i->locationInMemory + 1] == nonce)
                 this->for_write[i->locationInMemory + 1] = c4;
             if (this->for_write[i->locationInMemory + 2] == nonce)
-                this->for_write[i->locationInMemory + 2] = c2;
+                this->for_write[i->locationInMemory + 2] = c1;
             if (this->for_write[i->locationInMemory + 3] == nonce)
-                this->for_write[i->locationInMemory + 3] = c1;
+                this->for_write[i->locationInMemory + 3] = c2;
 
             i->writted = true;
         }
