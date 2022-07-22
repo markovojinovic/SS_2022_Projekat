@@ -1689,10 +1689,10 @@ void Asembler::ldr_instruction(string red)
                 c3 = drugi[2];
             if (drugi.size() >= 4)
                 c4 = drugi[3];
-            this->for_write.push_back(c2);
-            this->for_write.push_back(c1);
-            this->for_write.push_back(c4);
             this->for_write.push_back(c3);
+            this->for_write.push_back(c4);
+            this->for_write.push_back(c1);
+            this->for_write.push_back(c2);
             this->locationCounter += 4;
             this->memoryCounter += 4;
         }
