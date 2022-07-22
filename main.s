@@ -1,34 +1,28 @@
-# file: isr_timer.s
+# file: isr_terminal.s
 
-.extern terminal_out
+.extern my_counter
+
+.global terminal_out, terminal_in
 
 .section isr
-# prekidna rutina za tajmer
-.equ line_feed, 0xA
-.equ carriage_return, 0xD
-.equ message_len, message_end - message_start
-.global isr_timer
-isr_timer:
+# prekidna rutina za terminal
+.equ terminal_out, 0xFF00
+.equ terminal_in, 0xFF02
+.equ character_offset, 2
+.global isr_terminal
+isr_terminal:
   push r0
   push r1
-  ldr r1, $0
-loop:
-  ldr r0, [r1 + message_start]
-  str r0, terminal_out 
-  ldr r0, $1
-  add r1, r0
-  ldr r0, $message_len
-  cmp r1, r0
-  jne loop
-  ldr r0, $line_feed
+  ldr r0, terminal_in
+  ldr r1, $character_offset
+  add r0, r1
   str r0, terminal_out
-  ldr r0, $carriage_return
-  str r0, terminal_out
+  ldr r0, %my_counter # pcrel
+  ldr r1, $1
+  add r0, r1
+  str r0, my_counter # abs
   pop r1
   pop r0
   iret
-message_start:
-.ascii "timer interrupt"
-message_end:
-
+  
 .end

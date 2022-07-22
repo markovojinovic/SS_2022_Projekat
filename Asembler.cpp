@@ -665,7 +665,14 @@ void Asembler::equ_function(string red)
             return;
         }
     }
-    this->add_to_symbol_table(Symbol(simbol, false, false, this->currentSectionNumber, val), false);
+    bool postoji = false;
+    for (auto a : this->symbolTable)
+        if (a.name == simbol)
+        {
+            postoji = true;
+            break;
+        }
+    this->add_to_symbol_table(Symbol(simbol, false, false, this->currentSectionNumber, val), postoji);
 }
 
 void Asembler::label_function(string red)
@@ -1849,12 +1856,15 @@ void Asembler::print_symbol_table()
          << endl;
     cout << "=========================================Symbol Table==============================================" << endl;
     cout << "---------------------------------------------------------------------------------------------------" << endl;
-    cout << "Name\t\tIs global\tNumber\t\tSection\t\tSize\t\tValue\t\t" << endl;
+    cout << "Name\t\t\tIs global\tNumber\t\tSection\t\tSize\t\tValue\t\t" << endl;
     cout << "---------------------------------------------------------------------------------------------------" << endl;
-    cout << "UND\t\t0\t\t0\t\t0\t\t0\t\t0\t\t" << endl;
+    cout << "UND\t\t\t0\t\t0\t\t0\t\t0\t\t0\t\t" << endl;
     for (Symbol a : this->symbolTable)
     {
         if (a.name.length() < 8)
+            cout << a.name << "\t\t\t" << to_string(a.isGlobal) << "\t\t" << a.number << "\t\t" << a.seciton
+                 << "\t\t" << a.size << "\t\t" << a.value << endl;
+        else if (a.name.length() < 16)
             cout << a.name << "\t\t" << to_string(a.isGlobal) << "\t\t" << a.number << "\t\t" << a.seciton
                  << "\t\t" << a.size << "\t\t" << a.value << endl;
         else
@@ -1880,9 +1890,12 @@ int Asembler::add_to_symbol_table(Symbol s, bool redefied)
             continue;
         else
         {
-            if (redefied && s.isGlobal)
+            if (redefied)
             {
-                tr->isGlobal = true;
+                if (s.isGlobal)
+                    tr->isGlobal = true;
+                else
+                    tr->value = s.value;
                 dodaj = false;
                 break;
             }
