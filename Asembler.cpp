@@ -809,7 +809,7 @@ void Asembler::data_adressing(string novi, string &first, string &second, bool &
             for (auto tr : this->symbolTable)
                 if (tr.name == novi)
                     val = to_string(tr.value);
-            if (val == "")
+            if (val == "" || val == "-3")
             {
                 second = "RRRR";
                 this->backPatching.push_back(Info(novi, this->locationCounter, this->memoryCounter, 1, this->currentSectionNumber));
@@ -883,7 +883,7 @@ void Asembler::data_adressing(string novi, string &first, string &second, bool &
                 for (auto tr : this->symbolTable)
                     if (tr.name == second)
                         val = to_string(tr.value);
-                if (val == "")
+                if (val == "" || val == "-3")
                 {
                     this->backPatching.push_back(Info(second, this->locationCounter, this->memoryCounter, 0, this->currentSectionNumber));
                     second = "RRRR";
@@ -1042,7 +1042,7 @@ void Asembler::data_adressing(string novi, string &first, string &second, bool &
                     for (auto tr : this->symbolTable)
                         if (tr.name == second)
                             val = to_string(tr.value);
-                    if (val == "")
+                    if (val == "" || val == "-3")
                     {
                         this->backPatching.push_back(Info(second, this->locationCounter, this->memoryCounter, 1, this->currentSectionNumber));
                         second = "RRRR";
@@ -1066,7 +1066,7 @@ void Asembler::data_adressing(string novi, string &first, string &second, bool &
         for (auto tr : this->symbolTable)
             if (tr.name == novi)
                 val = to_string(tr.value);
-        if (val == "")
+        if (val == "" || val == "-3")
         {
             second = "RRRR";
             this->backPatching.push_back(Info(novi, this->locationCounter, this->memoryCounter, 1, this->currentSectionNumber));
@@ -1130,7 +1130,7 @@ void Asembler::jump_adressing(string novi, string &first, string &second, bool &
         for (auto tr : this->symbolTable)
             if (tr.name == novi)
                 val = to_string(tr.value);
-        if (val == "")
+        if (val == "" || val == "-3")
         {
             second = "RRRR";
             this->backPatching.push_back(Info(novi, this->locationCounter, this->memoryCounter, 1, this->currentSectionNumber));
@@ -1171,7 +1171,7 @@ void Asembler::jump_adressing(string novi, string &first, string &second, bool &
                 for (auto tr : this->symbolTable)
                     if (tr.name == second)
                         val = to_string(tr.value);
-                if (val == "")
+                if (val == "" || val == "-3")
                 {
                     this->backPatching.push_back(Info(second, this->locationCounter, this->memoryCounter, 0, this->currentSectionNumber));
                     second = "RRRR";
@@ -1334,7 +1334,7 @@ void Asembler::jump_adressing(string novi, string &first, string &second, bool &
                         for (auto tr : this->symbolTable)
                             if (tr.name == second)
                                 val = to_string(tr.value);
-                        if (val == "")
+                        if (val == "" || val == "-3")
                         {
                             this->backPatching.push_back(Info(second, this->locationCounter, this->memoryCounter, 1, this->currentSectionNumber));
                             second = "RRRR";
@@ -1383,7 +1383,7 @@ void Asembler::jump_adressing(string novi, string &first, string &second, bool &
             for (auto tr : this->symbolTable)
                 if (tr.name == novi)
                     val = to_string(tr.value);
-            if (val == "")
+            if (val == "" || val == "-3")
             {
                 second = "RRRR";
                 this->backPatching.push_back(Info(novi, this->locationCounter, this->memoryCounter, 1, this->currentSectionNumber));
@@ -1908,12 +1908,6 @@ int Asembler::add_to_symbol_table(Symbol s, bool redefied)
             this->currentSection = s.name;
             this->currentSectionNumber = s.number;
         }
-        if (s.value == -3) // TODO: razresiti slucaj backpatchinga sa linije 20 asm fajla
-        {
-            s.another = true;
-            this->backPatching.push_back(Info(s.name, s.number, s.number, 1));
-        }
-
         this->symbolTable.push_back(s);
     }
     this->back_patching(s.name);
@@ -1936,6 +1930,7 @@ void Asembler::back_patching(string simbol)
             value = a.value;
     if (value == -1)
         return;
+    string rec = "";
     for (auto i = this->backPatching.begin(); i != this->backPatching.end(); i++)
     {
         if (i->name == simbol && !(i->writted) && i->typeOfDefinition == 1 && i->locationInMemory < this->for_write.size())
@@ -1992,7 +1987,7 @@ void Asembler::back_patching(string simbol)
             for (tr = this->symbolTable.begin(); tr != this->symbolTable.end(); tr++)
                 if (tr->number == i->numberInSybolTable)
                 {
-                    string ime = tr->name;
+                    rec = tr->name;
                     tr->value = val;
                     break;
                 }
@@ -2000,6 +1995,8 @@ void Asembler::back_patching(string simbol)
             int vred = tr->value;
         }
     }
+    if (rec != "")
+        this->back_patching(rec);
 }
 
 int Asembler::start_reading()
