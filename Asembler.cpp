@@ -26,7 +26,7 @@ Asembler::Asembler(string in_name, string out_name)
     }
 
     output.open(this->output_name, ios_base::out | ios_base::binary);
-    if (!file.is_open())
+    if (!output.is_open())
     {
         op_code = FILE_ERROR;
         printError(op_code, line);
@@ -2010,6 +2010,31 @@ void Asembler::back_patching(string simbol)
     }
     if (rec != "")
         this->back_patching(rec);
+}
+
+void Asembler::exit_protocol()
+{
+    ofstream symbol_table;
+    symbol_table.open("asembly_symbol_table.txt");
+    if (!symbol_table.is_open())
+    {
+        op_code = FILE_ERROR;
+        printError(op_code, line);
+        this->stopProcess = true;
+    }
+    for (auto a : this->symbolTable)
+        symbol_table << a.name << "\t" << a.isGlobal << "\t" << a.number << "\t" << a.seciton << "\t" << a.size << "\t" << a.value << "\n";
+
+    ofstream relocation_write;
+    relocation_write.open("asembly_relocation_write.txt");
+    if (!relocation_write.is_open())
+    {
+        op_code = FILE_ERROR;
+        printError(op_code, line);
+        this->stopProcess = true;
+    }
+    for (auto a : this->backPatching)
+        relocation_write << a.name << "\t" << a.locationInCode << "\t" << a.locationInMemory << "\t" << a.typeOfDefinition << "\t" << a.numberInSybolTable << "\n";
 }
 
 int Asembler::start_reading()

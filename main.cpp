@@ -26,6 +26,7 @@ int main(int argc, char *argv[])
     if (as.start_reading() == 1)
     {
         as.print_symbol_table();
+        as.exit_protocol();
     }
     else
         cout << "Zbog greske prevodjenje prekinuto!!!" << endl;

@@ -144,6 +144,7 @@ private:
 
 public:
     int str_to_val(string);
+    void exit_protocol();
 };
 
 #endif
