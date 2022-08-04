@@ -1,0 +1,7 @@
+my_start	1	1	0	-1	0
+my_counter	1	2	0	-1	62
+code	0	3	3	62	-1
+initial_r6	0	4	3	-1	65278
+timer_config	0	5	3	-1	65296
+wait	0	6	3	-1	30
+my_data	0	7	7	4	-1

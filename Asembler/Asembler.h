@@ -84,6 +84,7 @@ public:
         bool writted;
 
         friend class Asembler;
+        friend class linker;
     };
 
 private:
@@ -145,6 +146,8 @@ private:
 public:
     int str_to_val(string);
     void exit_protocol();
+
+    friend class linker;
 };
 
 #endif
