@@ -20,6 +20,7 @@ int main(int argc, char *argv[])
     else
     {
         cout << "Nedefinisana ulazna komanda" << endl;
+        return -1;
     }
 
     // cout << endl;
@@ -32,7 +33,7 @@ int main(int argc, char *argv[])
     // else
     //     cout << "Zbog greske prevodjenje prekinuto!!!" << endl;
 
-    // return 0;
+    return 0;
 }
 
 // 1:29:56

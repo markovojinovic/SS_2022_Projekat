@@ -1,5 +1,5 @@
-#ifndef PROBA_ZA_PROJEKAT_IZ_SS_ASEMBLER_H
-#define PROBA_ZA_PROJEKAT_IZ_SS_ASEMBLER_H
+#ifndef ASEMBLER_H
+#define ASEMBLER_H
 
 #include <string>
 #include <iostream>
