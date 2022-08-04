@@ -2015,7 +2015,15 @@ void Asembler::back_patching(string simbol)
 void Asembler::exit_protocol()
 {
     ofstream symbol_table;
-    symbol_table.open("asembly_symbol_table.txt");
+    string sym_name = "asembly_symbol_table";
+    sym_name += "_";
+    for (auto a : this->input_name)
+        if (a != '.')
+            sym_name += a;
+        else
+            break;
+    sym_name += ".txt";
+    symbol_table.open(sym_name);
     if (!symbol_table.is_open())
     {
         op_code = FILE_ERROR;
@@ -2026,7 +2034,15 @@ void Asembler::exit_protocol()
         symbol_table << a.name << "\t" << a.isGlobal << "\t" << a.number << "\t" << a.seciton << "\t" << a.size << "\t" << a.value << "\n";
 
     ofstream relocation_write;
-    relocation_write.open("asembly_relocation_write.txt");
+    string rel_name = "asembly_relocation_write";
+    rel_name += "_";
+    for (auto a : this->input_name)
+        if (a != '.')
+            rel_name += a;
+        else
+            break;
+    rel_name += ".txt";
+    relocation_write.open(rel_name);
     if (!relocation_write.is_open())
     {
         op_code = FILE_ERROR;
