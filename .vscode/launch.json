@@ -5,7 +5,7 @@
       "name": "C/C++ Runner: Debug Session",
       "type": "cppdbg",
       "request": "launch",
-      "args": ["-o","main.o","main.s"],
+      "args": [],
       "stopAtEntry": false,
       "externalConsole": false,
       "cwd": "c:/Users/vm190559d/Desktop/Fax/6.SEMESTAR/SS/SS_2022_Projekat",

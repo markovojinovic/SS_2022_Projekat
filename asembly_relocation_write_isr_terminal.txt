@@ -1,5 +1,0 @@
-terminal_in	12	12	1	4
-character_offset	22	22	1	4
-terminal_out	36	36	1	4
-my_counter	46	46	0	4
-my_counter	66	66	1	4

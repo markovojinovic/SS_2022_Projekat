@@ -25,6 +25,7 @@ class linker
                 this->size = 0;
             this->value = val;
             this->another = false;
+            this->isExtern = false;
         }
         Symbol() {}
 
@@ -37,6 +38,7 @@ class linker
         bool another;
         int number;
         int size;
+        bool isExtern;
 
         friend class linker;
     };
@@ -77,23 +79,49 @@ class linker
         friend class linker;
     };
 
+    class section
+    {
+    public:
+        vector<char> code;
+        string ime;
+        bool served;
+        int pomeraj;
+        section(string im)
+        {
+            this->ime = im;
+            this->served = false;
+            this->pomeraj = -1;
+        }
+    };
+
+    class file_
+    {
+    public:
+        vector<section> sections;
+        string ime;
+        list<Symbol> symTable;
+        list<Info> relTable;
+        file_(string im) { this->ime = im; }
+    };
+
 private:
+    bool stopProcess;
     list<string> global;
     list<string> extern_;
     ifstream input;
+    ofstream output;
     string currentInput;
     vector<string> input_name;
     list<Symbol> symbolTable;
-    list<Symbol> currentTable;
-    list<Info> currentRelocatible;
+    vector<file_> red_files;
     vector<char> for_write;
     int red;
 
-    void red_current_sym_table();
-    void red_current_relocatible();
+    void red_current();
+    void obrada();
 
 public:
-    linker(vector<string>);
+    linker(vector<string>, string);
     ~linker();
     int start_reading();
     void exit_protocol();

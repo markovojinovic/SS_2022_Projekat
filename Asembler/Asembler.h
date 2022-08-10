@@ -36,6 +36,7 @@ public:
                 this->size = 0;
             this->value = val;
             this->another = false;
+            this->isExtern = false;
         }
 
     private:
@@ -44,6 +45,7 @@ public:
         int value;
         bool isGlobal;
         bool isSection;
+        bool isExtern;
         bool another;
         int number;
         int size;
@@ -96,6 +98,7 @@ private:
     bool stopProcess;
     ifstream file;
     fstream output;
+    ofstream helper_file;
     string input_name;
     string output_name;
     string currentSection;
@@ -142,6 +145,9 @@ private:
     void back_patching(string);
 
     string int_to_hex(int);
+
+    void print(int);
+    void print(string);
 
 public:
     int str_to_val(string);
