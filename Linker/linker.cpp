@@ -58,14 +58,14 @@ int linker::start_reading()
     //     }
     // }
 
-    // for (auto a : this->red_files)
-    // {
-    //     cout << a.ime << endl;
-    //     cout << "--------" << endl;
-    //     for (auto b : a.symTable)
-    //         cout << b.name << " " << b.value << endl;
-    //     cout << "------------------------" << endl;
-    // }
+    for (auto a : this->red_files)
+    {
+        cout << a.ime << endl;
+        cout << "--------" << endl;
+        for (auto b : a.symTable)
+            cout << b.name << " " << b.value << endl;
+        cout << "------------------------" << endl;
+    }
     return 0;
 }
 
@@ -323,7 +323,7 @@ void linker::obrada()
                                         else
                                             broj = val;
                                         b->value = broj;
-
+                                        // Ako nije def a extern je greska!!!
                                         std::ostringstream ss;
                                         ss << std::hex << broj;
                                         string result = ss.str();
@@ -384,7 +384,7 @@ void linker::obrada()
                             else
                                 broj = val;
                             b->value = broj;
-
+                            // Ako nije def a extern je greska!!!
                             std::ostringstream ss;
                             ss << std::hex << broj;
                             string result = ss.str();

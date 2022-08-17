@@ -24,7 +24,7 @@ int main(int argc, char *argv[])
     }
 
     // cout << endl;
-    // Asembler as("main.s", "main.o");
+    // Asembler as("novi.s", "novi.o");
     // if (as.start_reading() == 1)
     // {
     //     as.print_symbol_table();
