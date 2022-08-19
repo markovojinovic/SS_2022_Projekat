@@ -14,6 +14,7 @@ const int DOT_START = -9;
 const int SINTAX_ERROR = -10;
 const int REGISTER_OUT_OF_BOUNDS = -11;
 const int UNDEFINED_SYMBOL = -12;
+const int ZERO_DIV = -13;
 
 // EROOR SCHEMA
 
@@ -62,6 +63,10 @@ void printError(int code, int line)
         break;
     case UNDEFINED_SYMBOL:
         cout << "Operation code: " << code << " = Simbol nije definisan!!!" << endl;
+        cout << "Line: " << line << endl;
+        break;
+    case ZERO_DIV:
+        cout << "Operation code: " << code << " = Ne moze se deliti sa nulom!!!" << endl;
         cout << "Line: " << line << endl;
         break;
     default:

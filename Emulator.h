@@ -54,8 +54,11 @@ private:
     ifstream input;
     unordered_map<int, string> memory;
     int registers[8];
-    string psw = "0000000000000000";
+    int temp;
+    string psw = "0000";
     bool stopProcess;
+    bool pushPSW;
+    bool popPSW;
 };
 
 #endif

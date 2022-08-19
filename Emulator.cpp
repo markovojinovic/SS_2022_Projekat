@@ -12,11 +12,10 @@ const int pc = 7;
 const int sp = 6;
 
 // psw flegovi
-const int n = 3;
-const int c = 2;
-const int o = 1;
-const int z = 0;
-const int i = 15;
+const int n = 0;
+const int c = 1;
+const int o = 2;
+const int z = 3;
 
 // kodovi operacija instrukcija
 const char *halt = "00";
@@ -63,9 +62,12 @@ Emulator::Emulator(string input)
 {
     this->input_name = input;
     this->stopProcess = false;
+    this->pushPSW = false;
+    this->popPSW = false;
     this->input.open(this->input_name);
     for (int i = 0; i < 8; i++)
         this->registers[i] = 0;
+    this->temp = 0;
     if (!this->input.is_open() || !this->input)
         printError(FILE_ERROR, 0);
 }
@@ -137,9 +139,11 @@ int Emulator::start_reading()
             printError(UNDEFINED_INSTRUCTION, 0);
             return -1;
         }
-
-        return 0;
     }
+
+    // pokrenuti funkciju koja kaze da se emulirao halt
+
+    return 0;
 }
 
 void Emulator::exit_protocol()
@@ -167,12 +171,32 @@ void Emulator::load_memory()
     this->input.close();
 }
 
-void Emulator::int_instruction()
+void Emulator::int_instruction() // TODO: provera
 {
+    string arg = this->memory[this->registers[pc]++];
+    string arg_reg = "";
+    arg_reg.push_back(arg[0]);
+    int reg;
+    stringstream geek(arg_reg);
+    geek >> reg;
+    if (reg > 7 || reg < 0)
+    {
+        printError(REGISTER_OUT_OF_BOUNDS, 0);
+        this->stopProcess = true;
+        return;
+    }
+    int adr = (this->registers[reg] % 8) * 2;
+    string num = "";
+    num.append(this->memory[adr]);
+    num.append(this->memory[adr + 1]);
+    this->registers[pc] = this->lit_end_hex_to_int(num);
 }
 
 void Emulator::iret_instruction()
 {
+    this->popPSW = true;
+    this->pop(0);
+    this->pop(pc);
 }
 
 void Emulator::call_instruction()
@@ -181,6 +205,7 @@ void Emulator::call_instruction()
 
 void Emulator::ret_instruction()
 {
+    this->pop(pc);
 }
 
 void Emulator::jmp_instruction()
@@ -205,50 +230,186 @@ void Emulator::xchg_instruction()
 
 void Emulator::add_instruction()
 {
+    string arg = this->memory[this->registers[pc]++];
+    string arg_regD = "", arg_regS = "";
+    arg_regD.push_back(arg[0]);
+    arg_regS.push_back(arg[1]);
+    int regD, regS;
+    stringstream geek(arg_regS);
+    geek >> regS;
+    stringstream geek1(arg_regD);
+    geek1 >> regD;
+    this->registers[regD] += this->registers[regS];
 }
 
 void Emulator::sub_instruction()
 {
+    string arg = this->memory[this->registers[pc]++];
+    string arg_regD = "", arg_regS = "";
+    arg_regD.push_back(arg[0]);
+    arg_regS.push_back(arg[1]);
+    int regD, regS;
+    stringstream geek(arg_regS);
+    geek >> regS;
+    stringstream geek1(arg_regD);
+    geek1 >> regD;
+    this->registers[regD] -= this->registers[regS];
 }
 
 void Emulator::mul_instruction()
 {
+    string arg = this->memory[this->registers[pc]++];
+    string arg_regD = "", arg_regS = "";
+    arg_regD.push_back(arg[0]);
+    arg_regS.push_back(arg[1]);
+    int regD, regS;
+    stringstream geek(arg_regS);
+    geek >> regS;
+    stringstream geek1(arg_regD);
+    geek1 >> regD;
+    this->registers[regD] *= this->registers[regS];
 }
 
 void Emulator::div_instruction()
 {
+    string arg = this->memory[this->registers[pc]++];
+    string arg_regD = "", arg_regS = "";
+    arg_regD.push_back(arg[0]);
+    arg_regS.push_back(arg[1]);
+    int regD, regS;
+    stringstream geek(arg_regS);
+    geek >> regS;
+    stringstream geek1(arg_regD);
+    geek1 >> regD;
+    if (this->registers[regS] == 0)
+    {
+        printError(ZERO_DIV, 0);
+        this->stopProcess = true;
+        return;
+    }
+    this->registers[regD] /= this->registers[regS];
 }
 
 void Emulator::cmp_instruction()
 {
+    string arg = this->memory[this->registers[pc]++];
+    string arg_regD = "", arg_regS = "";
+    arg_regD.push_back(arg[0]);
+    arg_regS.push_back(arg[1]);
+    int regD, regS;
+    stringstream geek(arg_regS);
+    geek >> regS;
+    stringstream geek1(arg_regD);
+    geek1 >> regD;
+    this->temp = this->registers[regD] - this->registers[regS];
+    if (temp == 0)
+        this->psw[z] = '1';
+    if (temp < 0)
+        this->psw[n] = '1';
+    // TODO: dodati i ostale prenose
 }
 
 void Emulator::not_instruction()
 {
+    string arg = this->memory[this->registers[pc]++];
+    string arg_regD = "", arg_regS = "";
+    arg_regD.push_back(arg[0]);
+    arg_regS.push_back(arg[1]);
+    int regD, regS;
+    stringstream geek(arg_regS);
+    geek >> regS;
+    stringstream geek1(arg_regD);
+    geek1 >> regD;
+    this->registers[regD] == 0 ? this->registers[regD] = 1 : this->registers[regD] = 0;
 }
 
 void Emulator::and_instruction()
 {
+    string arg = this->memory[this->registers[pc]++];
+    string arg_regD = "", arg_regS = "";
+    arg_regD.push_back(arg[0]);
+    arg_regS.push_back(arg[1]);
+    int regD, regS;
+    stringstream geek(arg_regS);
+    geek >> regS;
+    stringstream geek1(arg_regD);
+    geek1 >> regD;
+    this->registers[regD] &= this->registers[regS];
 }
 
 void Emulator::or_instruction()
 {
+    string arg = this->memory[this->registers[pc]++];
+    string arg_regD = "", arg_regS = "";
+    arg_regD.push_back(arg[0]);
+    arg_regS.push_back(arg[1]);
+    int regD, regS;
+    stringstream geek(arg_regS);
+    geek >> regS;
+    stringstream geek1(arg_regD);
+    geek1 >> regD;
+    this->registers[regD] |= this->registers[regS];
 }
 
 void Emulator::xor_instruction()
 {
+    string arg = this->memory[this->registers[pc]++];
+    string arg_regD = "", arg_regS = "";
+    arg_regD.push_back(arg[0]);
+    arg_regS.push_back(arg[1]);
+    int regD, regS;
+    stringstream geek(arg_regS);
+    geek >> regS;
+    stringstream geek1(arg_regD);
+    geek1 >> regD;
+    this->registers[regD] ^= this->registers[regS];
 }
 
 void Emulator::test_instruction()
 {
+    string arg = this->memory[this->registers[pc]++];
+    string arg_regD = "", arg_regS = "";
+    arg_regD.push_back(arg[0]);
+    arg_regS.push_back(arg[1]);
+    int regD, regS;
+    stringstream geek(arg_regS);
+    geek >> regS;
+    stringstream geek1(arg_regD);
+    geek1 >> regD;
+    this->temp = this->registers[regD] & this->registers[regS];
+    if (temp == 0)
+        this->psw[z] = '1';
+    if (temp < 0)
+        this->psw[n] = '1';
+    // TODO: dodati i ostale prenose
 }
 
 void Emulator::shl_instruction()
 {
+    string arg = this->memory[this->registers[pc]++];
+    string arg_regD = "", arg_regS = "";
+    arg_regD.push_back(arg[0]);
+    arg_regS.push_back(arg[1]);
+    int regD, regS;
+    stringstream geek(arg_regS);
+    geek >> regS;
+    stringstream geek1(arg_regD);
+    geek1 >> regD;
+    this->registers[regD] <<= this->registers[regS];
 }
 
 void Emulator::shr_instruction()
 {
+    string arg = this->memory[this->registers[pc]++];
+    string arg_regD = "", arg_regS = "";
+    arg_regD.push_back(arg[0]);
+    arg_regS.push_back(arg[1]);
+    int regD, regS;
+    stringstream geek(arg_regS);
+    geek >> regS;
+    stringstream geek1(arg_regD);
+    geek1 >> regD;
+    this->registers[regD] >>= this->registers[regS];
 }
 
 void Emulator::ldr_instruction()
@@ -261,7 +422,19 @@ void Emulator::str_instruction()
 
 void Emulator::push(int reg) // TODO: provera
 {
-    string mem = this->int_to_hex_lit_end(this->registers[reg]);
+    string mem = "";
+    if (this->pushPSW)
+    {
+        this->pushPSW = false;
+        mem = psw;
+    }
+    else
+    {
+        mem = this->int_to_hex_lit_end(this->registers[reg]);
+        if (mem.size() < 4)
+            for (int i = mem.size() + 1; i < 5; i++)
+                mem.insert(mem.begin(), '0');
+    }
 
     string low = "";
     low.push_back(mem[0]);
@@ -281,8 +454,16 @@ void Emulator::pop(int reg) // TODO: provera
     num.append(this->memory[this->registers[sp]++]);
     num.append(this->memory[this->registers[sp]++]);
 
-    int val = this->lit_end_hex_to_int(num);
-    this->registers[reg] = val;
+    if (this->popPSW)
+    {
+        this->popPSW = false;
+        this->psw = num;
+    }
+    else
+    {
+        int val = this->lit_end_hex_to_int(num);
+        this->registers[reg] = val;
+    }
 }
 
 string Emulator::get_number()
@@ -315,7 +496,7 @@ int Emulator::lit_end_hex_to_int(string num)
 string Emulator::int_to_hex_lit_end(int num)
 {
     ostringstream ss;
-    ss << hex << i;
+    ss << hex << num;
     string result = ss.str();
 
     if (result.size() > 4)
