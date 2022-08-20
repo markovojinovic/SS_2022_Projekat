@@ -58,7 +58,9 @@ const char preinc = '2';
 const char postdec = '3';
 const char postinc = '4';
 
-// TODO: procenat adresiranje i azuriranje registra kod sestanja i ucitavanja
+// TODO: procenat adresiranje
+
+// PROVERITI STA SE PUSHUJE I STA POPUJE KOD INT I RET, IRET...
 
 Emulator::Emulator(string input)
 {
@@ -143,6 +145,8 @@ int Emulator::start_reading()
             return -1;
         }
         this->num++;
+        if (this->num == 100)
+            break;
     }
 
     // pokrenuti funkciju koja kaze da se emulirao halt
@@ -204,6 +208,8 @@ void Emulator::int_instruction() // TODO: provera
         this->stopProcess = true;
         return;
     }
+    this->pushPSW = true;
+    this->push(0);
     int adr = (this->registers[reg] % 8) * 2;
     string num = "";
     num.append(this->memory[adr]);
@@ -623,17 +629,29 @@ void Emulator::ldr_instruction()
     else if (adr[1] == regind)
     {
         // registarsko indirektno
-        if (regS > 7 || regS < 0)
+        if (adr[0] == postinc)
         {
-            printError(REGISTER_OUT_OF_BOUNDS, 0);
-            this->stopProcess = true;
-            return;
+            // pop funckija
+            string num = "";
+            num.append(this->memory[this->registers[sp]++]);
+            num.append(this->memory[this->registers[sp]++]);
+            int val = this->lit_end_hex_to_int(num);
+            this->registers[regD] = val;
         }
-        string num = "";
-        num.append(this->memory[this->registers[regS]]);
-        num.append(this->memory[this->registers[regS] + 1]);
-        int val = this->lit_end_hex_to_int(num);
-        this->registers[regD] = val;
+        else
+        {
+            if (regS > 7 || regS < 0)
+            {
+                printError(REGISTER_OUT_OF_BOUNDS, 0);
+                this->stopProcess = true;
+                return;
+            }
+            string num = "";
+            num.append(this->memory[this->registers[regS]]);
+            num.append(this->memory[this->registers[regS] + 1]);
+            int val = this->lit_end_hex_to_int(num);
+            this->registers[regD] = val;
+        }
     }
     else if (adr[1] == regindmov)
     {
@@ -706,23 +724,47 @@ void Emulator::str_instruction()
     else if (adr[1] == regind)
     {
         // registarsko indirektno
-        if (regS > 7 || regS < 0)
+        if (adr[0] == predec)
         {
-            printError(REGISTER_OUT_OF_BOUNDS, 0);
-            this->stopProcess = true;
-            return;
-        }
-        int val = this->registers[regD];
-        string hex_val = this->int_to_hex_lit_end(val);
-        string low = "";
-        low.push_back(hex_val[0]);
-        low.push_back(hex_val[1]);
-        string heigh = "";
-        heigh.push_back(hex_val[2]);
-        heigh.push_back(hex_val[3]);
+            // push funkcija
+            string mem = "";
 
-        this->memory[regS] = low;
-        this->memory[regS + 1] = heigh;
+            mem = this->int_to_hex_lit_end(this->registers[regD]);
+            if (mem.size() < 4)
+                for (int i = mem.size() + 1; i < 5; i++)
+                    mem.insert(mem.begin(), '0');
+
+            string low = "";
+            low.push_back(mem[0]);
+            low.push_back(mem[1]);
+            string heigh = "";
+            heigh.push_back(mem[2]);
+            heigh.push_back(mem[3]);
+
+            this->registers[sp]--;
+            this->memory[this->registers[sp]--] = heigh;
+            this->memory[this->registers[sp]] = low;
+        }
+        else
+        {
+            if (regS > 7 || regS < 0)
+            {
+                printError(REGISTER_OUT_OF_BOUNDS, 0);
+                this->stopProcess = true;
+                return;
+            }
+            int val = this->registers[regD];
+            string hex_val = this->int_to_hex_lit_end(val);
+            string low = "";
+            low.push_back(hex_val[0]);
+            low.push_back(hex_val[1]);
+            string heigh = "";
+            heigh.push_back(hex_val[2]);
+            heigh.push_back(hex_val[3]);
+
+            this->memory[regS] = low;
+            this->memory[regS + 1] = heigh;
+        }
     }
     else if (adr[1] == regindmov)
     {
