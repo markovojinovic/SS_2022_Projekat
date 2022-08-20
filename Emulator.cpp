@@ -6,6 +6,7 @@ using namespace std;
 
 // max value in registers
 const int max_val = 65535;
+const int sp_init = 65278;
 
 // fiksirani registri
 const int pc = 7;
@@ -60,7 +61,7 @@ const char postinc = '4';
 
 // TODO: procenat adresiranje
 
-// PROVERITI STA SE PUSHUJE I STA POPUJE KOD INT I RET, IRET...
+// Greska se javlja kod ret f-je, nije dobar redosked na steku
 
 Emulator::Emulator(string input)
 {
@@ -144,12 +145,12 @@ int Emulator::start_reading()
             printError(UNDEFINED_INSTRUCTION, 0);
             return -1;
         }
-        this->num++;
+        this->num++; // TODO: kad se ispravi program ovo skloniti
         if (this->num == 100)
             break;
+        if (this->stopProcess) // ovo ostviti
+            return -1;
     }
-
-    // pokrenuti funkciju koja kaze da se emulirao halt
 
     return 0;
 }
@@ -210,6 +211,7 @@ void Emulator::int_instruction() // TODO: provera
     }
     this->pushPSW = true;
     this->push(0);
+    this->push(pc);
     int adr = (this->registers[reg] % 8) * 2;
     string num = "";
     num.append(this->memory[adr]);
@@ -219,10 +221,13 @@ void Emulator::int_instruction() // TODO: provera
 
 void Emulator::iret_instruction()
 {
+    // for (int i = this->registers[sp]; i < sp_init; i++)
+    //     cout << this->memory[i];
+    // cout << endl;
     cout << "iret_instruction" << endl;
+    this->pop(pc);
     this->popPSW = true;
     this->pop(0);
-    this->pop(pc);
 }
 
 void Emulator::call_instruction()
@@ -234,6 +239,9 @@ void Emulator::call_instruction()
 
 void Emulator::ret_instruction()
 {
+    for (int i = this->registers[sp]; i < sp_init; i++)
+        cout << this->memory[i];
+    cout << endl;
     cout << "ret_instruction" << endl;
     this->pop(pc);
 }
@@ -633,8 +641,8 @@ void Emulator::ldr_instruction()
         {
             // pop funckija
             string num = "";
-            num.append(this->memory[this->registers[sp]++]);
-            num.append(this->memory[this->registers[sp]++]);
+            num.append(this->memory[++this->registers[sp]]);
+            num.append(this->memory[++this->registers[sp]]);
             int val = this->lit_end_hex_to_int(num);
             this->registers[regD] = val;
         }
@@ -741,9 +749,8 @@ void Emulator::str_instruction()
             heigh.push_back(mem[2]);
             heigh.push_back(mem[3]);
 
-            this->registers[sp]--;
             this->memory[this->registers[sp]--] = heigh;
-            this->memory[this->registers[sp]] = low;
+            this->memory[this->registers[sp]--] = low;
         }
         else
         {
@@ -839,16 +846,15 @@ void Emulator::push(int reg) // TODO: provera
     heigh.push_back(mem[2]);
     heigh.push_back(mem[3]);
 
-    this->registers[sp]--;
     this->memory[this->registers[sp]--] = heigh;
-    this->memory[this->registers[sp]] = low;
+    this->memory[this->registers[sp]--] = low;
 }
 
 void Emulator::pop(int reg) // TODO: provera
 {
     string num = "";
-    num.append(this->memory[this->registers[sp]++]);
-    num.append(this->memory[this->registers[sp]++]);
+    num.append(this->memory[++this->registers[sp]]);
+    num.append(this->memory[++this->registers[sp]]);
 
     if (this->popPSW)
     {
