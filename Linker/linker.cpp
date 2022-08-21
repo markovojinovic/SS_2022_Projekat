@@ -312,7 +312,7 @@ void linker::obrada()
                             for (auto a : i->relTable)
                                 for (auto b = i->symTable.begin(); b != i->symTable.end(); b++)
                                 {
-                                    if (a.name == b->name && a.numberInSybolTable == br && (a.typeOfDefinition == 1 || a.typeOfDefinition == 1))
+                                    if (a.name == b->name && a.numberInSybolTable == br && (a.typeOfDefinition == 1 || a.typeOfDefinition == 0))
                                     {
                                         int val = -1, broj;
                                         for (auto c : this->symbolTable)
@@ -373,7 +373,7 @@ void linker::obrada()
                 for (auto a : i->relTable)
                     for (auto b = i->symTable.begin(); b != i->symTable.end(); b++)
                     {
-                        if (a.name == b->name && a.numberInSybolTable == br && (a.typeOfDefinition == 1 || a.typeOfDefinition == 1))
+                        if (a.name == b->name && a.numberInSybolTable == br && (a.typeOfDefinition == 1 || a.typeOfDefinition == 0))
                         {
                             int val = -1, broj;
                             for (auto c : this->symbolTable)

@@ -5,7 +5,7 @@
 .section math
 mathAdd: 
   push r1
-  ldr r0, [r6 + 4]  ##greska kod asemblera
+  ldr r0, [r6 + 4]
   ldr r1, [r6 + 6]
   add r0, r1
   pop r1
