@@ -59,6 +59,7 @@ private:
     bool stopProcess;
     bool pushPSW;
     bool popPSW;
+    bool call;
     int num;
 };
 

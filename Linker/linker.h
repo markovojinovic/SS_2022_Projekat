@@ -6,7 +6,7 @@
 #include <list>
 #include <unordered_map>
 #include <vector>
-#include "Asembler\Asembler.h"
+#include "..\Asembler\Asembler.h"
 
 class linker
 {

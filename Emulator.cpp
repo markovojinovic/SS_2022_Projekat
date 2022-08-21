@@ -22,7 +22,7 @@ const int z = 3;
 const char *halt = "00";
 const char *_int = "10";
 const char *iret = "20";
-const char *call = "30";
+const char *call_ = "30";
 const char *ret = "40";
 const char *jmp = "50";
 const char *jeq = "51";
@@ -69,6 +69,7 @@ Emulator::Emulator(string input)
     this->stopProcess = false;
     this->pushPSW = false;
     this->popPSW = false;
+    this->call = false;
     this->num = 0;
     this->input.open(this->input_name);
     for (int i = 0; i < 8; i++)
@@ -98,7 +99,7 @@ int Emulator::start_reading()
             this->int_instruction();
         else if (strcmp(iret, code.c_str()) == 0)
             this->iret_instruction();
-        else if (strcmp(call, code.c_str()) == 0)
+        else if (strcmp(call_, code.c_str()) == 0)
             this->call_instruction();
         else if (strcmp(ret, code.c_str()) == 0)
             this->ret_instruction();
@@ -146,8 +147,8 @@ int Emulator::start_reading()
             return -1;
         }
         this->num++; // TODO: kad se ispravi program ovo skloniti
-        if (this->num == 100)
-            break;
+        // if (this->num == 100)
+        //     break;
         if (this->stopProcess) // ovo ostviti
             return -1;
     }
@@ -221,9 +222,9 @@ void Emulator::int_instruction() // TODO: provera
 
 void Emulator::iret_instruction()
 {
-    // for (int i = this->registers[sp]; i < sp_init; i++)
-    //     cout << this->memory[i];
-    // cout << endl;
+    for (int i = this->registers[sp]; i < sp_init; i++)
+        cout << this->memory[i] << " ";
+    cout << endl;
     cout << "iret_instruction" << endl;
     this->pop(pc);
     this->popPSW = true;
@@ -233,14 +234,14 @@ void Emulator::iret_instruction()
 void Emulator::call_instruction()
 {
     cout << "call_instruction" << endl;
-    this->push(pc);
+    this->call = true;
     this->jmp_instruction();
 }
 
 void Emulator::ret_instruction()
 {
     for (int i = this->registers[sp]; i < sp_init; i++)
-        cout << this->memory[i];
+        cout << this->memory[i] << " ";
     cout << endl;
     cout << "ret_instruction" << endl;
     this->pop(pc);
@@ -257,6 +258,11 @@ void Emulator::jmp_instruction()
         // neposredno adresiranje
         string oper = this->get_number();
         int oper_val = this->lit_end_hex_to_int(oper);
+        if (this->call)
+        {
+            this->call = false;
+            this->push(pc);
+        }
         this->registers[pc] = oper_val;
     }
     else if (adr[1] == regdir)
@@ -272,6 +278,11 @@ void Emulator::jmp_instruction()
             printError(REGISTER_OUT_OF_BOUNDS, 0);
             this->stopProcess = true;
             return;
+        }
+        if (this->call)
+        {
+            this->call = false;
+            this->push(pc);
         }
         this->registers[pc] = this->registers[regS];
     }
@@ -291,7 +302,17 @@ void Emulator::jmp_instruction()
         }
         string oper = this->get_number();
         int oper_val = this->lit_end_hex_to_int(oper);
-        this->registers[pc] = this->registers[regS] + oper_val;
+        if (this->call)
+        {
+            this->call = false;
+            this->push(pc);
+        }
+        if (regS == pc)
+        {
+            this->registers[pc] = oper_val;
+        }
+        else
+            this->registers[pc] = this->registers[regS] + oper_val;
     }
     else if (adr[1] == regind)
     {
@@ -311,6 +332,11 @@ void Emulator::jmp_instruction()
         num.append(this->memory[this->registers[regS]]);
         num.append(this->memory[this->registers[regS] + 1]);
         int val = this->lit_end_hex_to_int(num);
+        if (this->call)
+        {
+            this->call = false;
+            this->push(pc);
+        }
         this->registers[pc] = val;
     }
     else if (adr[1] == regindmov)
@@ -333,6 +359,11 @@ void Emulator::jmp_instruction()
         int val = this->lit_end_hex_to_int(num);
         string oper = this->get_number();
         int oper_val = this->lit_end_hex_to_int(oper);
+        if (this->call)
+        {
+            this->call = false;
+            this->push(pc);
+        }
         this->registers[pc] = val + oper_val;
     }
     else if (adr[1] == mem)
@@ -344,6 +375,11 @@ void Emulator::jmp_instruction()
         num.append(this->memory[oper_val]);
         num.append(this->memory[oper_val + 1]);
         int val = this->lit_end_hex_to_int(num);
+        if (this->call)
+        {
+            this->call = false;
+            this->push(pc);
+        }
         this->registers[pc] = val;
     }
     else
