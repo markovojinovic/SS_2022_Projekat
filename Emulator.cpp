@@ -146,9 +146,7 @@ int Emulator::start_reading()
             printError(UNDEFINED_INSTRUCTION, 0);
             return -1;
         }
-        this->num++; // TODO: kad se ispravi program ovo skloniti
-        // if (this->num == 100)
-        //     break;
+        this->num++;           // TODO: kad se ispravi program ovo skloniti
         if (this->stopProcess) // ovo ostviti
             return -1;
     }
@@ -161,10 +159,10 @@ void Emulator::exit_protocol()
     // TODO: kreiranje izlaznog fajla
 
     cout << "num = " << this->num << endl;
-    cout << "--------------------------------------" << endl
+    cout << "--------------------------------------------" << endl
          << "Emulated processor executed halt instruction" << endl
          << "Emulated processor state:" << endl
-         << "psw=0b000000000000" << this->psw[3] << this->psw[2] << this->psw[1] << this->psw[0] << endl
+         << "psw=0b001000000000" << this->psw[3] << this->psw[2] << this->psw[1] << this->psw[0] << endl
          << "r0=0x" << hex << this->registers[0] << endl
          << "r1=0x" << hex << this->registers[1] << endl
          << "r2=0x" << hex << this->registers[2] << endl
@@ -173,6 +171,7 @@ void Emulator::exit_protocol()
          << "r5=0x" << hex << this->registers[5] << endl
          << "r6=0x" << hex << this->registers[6] << endl
          << "r7=0x" << hex << this->registers[7] << endl;
+    cout << "--------------------------------------------" << endl;
 }
 
 void Emulator::load_memory()
@@ -197,7 +196,7 @@ void Emulator::load_memory()
 
 void Emulator::int_instruction() // TODO: provera
 {
-    cout << "int_instruction" << endl;
+    // cout << "int_instruction" << endl;
     string arg = this->memory[this->registers[pc]++];
     string arg_reg = "";
     arg_reg.push_back(arg[0]);
@@ -222,10 +221,7 @@ void Emulator::int_instruction() // TODO: provera
 
 void Emulator::iret_instruction()
 {
-    for (int i = this->registers[sp]; i < sp_init; i++)
-        cout << this->memory[i] << " ";
-    cout << endl;
-    cout << "iret_instruction" << endl;
+    // cout << "iret_instruction" << endl;
     this->pop(pc);
     this->popPSW = true;
     this->pop(0);
@@ -233,23 +229,20 @@ void Emulator::iret_instruction()
 
 void Emulator::call_instruction()
 {
-    cout << "call_instruction" << endl;
+    // cout << "call_instruction" << endl;
     this->call = true;
     this->jmp_instruction();
 }
 
 void Emulator::ret_instruction()
 {
-    for (int i = this->registers[sp]; i < sp_init; i++)
-        cout << this->memory[i] << " ";
-    cout << endl;
-    cout << "ret_instruction" << endl;
+    // cout << "ret_instruction" << endl;
     this->pop(pc);
 }
 
 void Emulator::jmp_instruction()
 {
-    cout << "jmp_instruction" << endl;
+    // cout << "jmp_instruction" << endl;
     string arg = this->memory[registers[pc]++];
     string adr = this->memory[registers[pc]++];
 
@@ -353,18 +346,19 @@ void Emulator::jmp_instruction()
             this->stopProcess = true;
             return;
         }
-        string num = "";
-        num.append(this->memory[this->registers[regS]]);
-        num.append(this->memory[this->registers[regS] + 1]);
-        int val = this->lit_end_hex_to_int(num);
+        int val = this->registers[regS];
         string oper = this->get_number();
         int oper_val = this->lit_end_hex_to_int(oper);
+        string num = "";
+        num.append(this->memory[oper_val + val]);
+        num.append(this->memory[oper_val + val + 1]);
+        int val_ = this->lit_end_hex_to_int(num);
         if (this->call)
         {
             this->call = false;
             this->push(pc);
         }
-        this->registers[pc] = val + oper_val;
+        this->registers[pc] = val_;
     }
     else if (adr[1] == mem)
     {
@@ -392,28 +386,28 @@ void Emulator::jmp_instruction()
 
 void Emulator::jeq_instruction()
 {
-    cout << "jeq_instruction" << endl;
+    // cout << "jeq_instruction" << endl;
     if (this->psw[z] == '0')
         this->jmp_instruction();
 }
 
 void Emulator::jne_instruction()
 {
-    cout << "jne_instruction" << endl;
+    // cout << "jne_instruction" << endl;
     if (this->psw[z] != '0')
         this->jmp_instruction();
 }
 
 void Emulator::jgt_instruction()
 {
-    cout << "jgt_instruction" << endl;
+    // cout << "jgt_instruction" << endl;
     if (this->psw[z] != '0' && this->psw[n] != '0')
         this->jmp_instruction();
 }
 
 void Emulator::xchg_instruction()
 {
-    cout << "xchg_instruction" << endl;
+    // cout << "xchg_instruction" << endl;
     string arg = this->memory[this->registers[pc]++];
     string arg_regD = "", arg_regS = "";
     arg_regD.push_back(arg[0]);
@@ -430,7 +424,7 @@ void Emulator::xchg_instruction()
 
 void Emulator::add_instruction()
 {
-    cout << "add_instruction" << endl;
+    // cout << "add_instruction" << endl;
     string arg = this->memory[this->registers[pc]++];
     string arg_regD = "", arg_regS = "";
     arg_regD.push_back(arg[0]);
@@ -445,7 +439,7 @@ void Emulator::add_instruction()
 
 void Emulator::sub_instruction()
 {
-    cout << "sub_instruction" << endl;
+    // cout << "sub_instruction" << endl;
     string arg = this->memory[this->registers[pc]++];
     string arg_regD = "", arg_regS = "";
     arg_regD.push_back(arg[0]);
@@ -460,7 +454,7 @@ void Emulator::sub_instruction()
 
 void Emulator::mul_instruction()
 {
-    cout << "mul_instruction" << endl;
+    // cout << "mul_instruction" << endl;
     string arg = this->memory[this->registers[pc]++];
     string arg_regD = "", arg_regS = "";
     arg_regD.push_back(arg[0]);
@@ -475,7 +469,7 @@ void Emulator::mul_instruction()
 
 void Emulator::div_instruction()
 {
-    cout << "div_instruction" << endl;
+    // cout << "div_instruction" << endl;
     string arg = this->memory[this->registers[pc]++];
     string arg_regD = "", arg_regS = "";
     arg_regD.push_back(arg[0]);
@@ -496,7 +490,7 @@ void Emulator::div_instruction()
 
 void Emulator::cmp_instruction()
 {
-    cout << "cmp_instruction" << endl;
+    // cout << "cmp_instruction" << endl;
     string arg = this->memory[this->registers[pc]++];
     string arg_regD = "", arg_regS = "";
     arg_regD.push_back(arg[0]);
@@ -516,7 +510,7 @@ void Emulator::cmp_instruction()
 
 void Emulator::not_instruction()
 {
-    cout << "not_instruction" << endl;
+    // cout << "not_instruction" << endl;
     string arg = this->memory[this->registers[pc]++];
     string arg_regD = "", arg_regS = "";
     arg_regD.push_back(arg[0]);
@@ -531,7 +525,7 @@ void Emulator::not_instruction()
 
 void Emulator::and_instruction()
 {
-    cout << "and_instruction" << endl;
+    // cout << "and_instruction" << endl;
     string arg = this->memory[this->registers[pc]++];
     string arg_regD = "", arg_regS = "";
     arg_regD.push_back(arg[0]);
@@ -546,7 +540,7 @@ void Emulator::and_instruction()
 
 void Emulator::or_instruction()
 {
-    cout << "or_instruction" << endl;
+    // cout << "or_instruction" << endl;
     string arg = this->memory[this->registers[pc]++];
     string arg_regD = "", arg_regS = "";
     arg_regD.push_back(arg[0]);
@@ -561,7 +555,7 @@ void Emulator::or_instruction()
 
 void Emulator::xor_instruction()
 {
-    cout << "xor_instruction" << endl;
+    // cout << "xor_instruction" << endl;
     string arg = this->memory[this->registers[pc]++];
     string arg_regD = "", arg_regS = "";
     arg_regD.push_back(arg[0]);
@@ -576,7 +570,7 @@ void Emulator::xor_instruction()
 
 void Emulator::test_instruction()
 {
-    cout << "test_instruction" << endl;
+    // cout << "test_instruction" << endl;
     string arg = this->memory[this->registers[pc]++];
     string arg_regD = "", arg_regS = "";
     arg_regD.push_back(arg[0]);
@@ -596,7 +590,7 @@ void Emulator::test_instruction()
 
 void Emulator::shl_instruction()
 {
-    cout << "shl_instruction" << endl;
+    // cout << "shl_instruction" << endl;
     string arg = this->memory[this->registers[pc]++];
     string arg_regD = "", arg_regS = "";
     arg_regD.push_back(arg[0]);
@@ -611,7 +605,7 @@ void Emulator::shl_instruction()
 
 void Emulator::shr_instruction()
 {
-    cout << "shr_instruction" << endl;
+    // cout << "shr_instruction" << endl;
     string arg = this->memory[this->registers[pc]++];
     string arg_regD = "", arg_regS = "";
     arg_regD.push_back(arg[0]);
@@ -626,7 +620,7 @@ void Emulator::shr_instruction()
 
 void Emulator::ldr_instruction()
 {
-    cout << "ldr_instruction" << endl;
+    // cout << "ldr_instruction" << endl;
     string arg = this->memory[registers[pc]++];
     string adr = this->memory[registers[pc]++];
 
@@ -706,13 +700,13 @@ void Emulator::ldr_instruction()
             this->stopProcess = true;
             return;
         }
-        string num = "";
-        num.append(this->memory[this->registers[regS]]);
-        num.append(this->memory[this->registers[regS] + 1]);
-        int val = this->lit_end_hex_to_int(num);
         string oper = this->get_number();
         int oper_val = this->lit_end_hex_to_int(oper);
-        this->registers[regD] = val + oper_val;
+        string num = "";
+        num.append(this->memory[this->registers[regS] + oper_val + 1]);
+        num.append(this->memory[this->registers[regS] + oper_val]);
+        int val = this->lit_end_hex_to_int(num);
+        this->registers[regD] = val;
     }
     else if (adr[1] == mem)
     {
@@ -735,7 +729,7 @@ void Emulator::ldr_instruction()
 
 void Emulator::str_instruction()
 {
-    cout << "str_instruction" << endl;
+    // cout << "str_instruction" << endl;
     string arg = this->memory[registers[pc]++];
     string adr = this->memory[registers[pc]++];
 
@@ -805,8 +799,8 @@ void Emulator::str_instruction()
             heigh.push_back(hex_val[2]);
             heigh.push_back(hex_val[3]);
 
-            this->memory[regS] = low;
-            this->memory[regS + 1] = heigh;
+            this->memory[this->registers[regS]] = low;
+            this->memory[this->registers[regS] + 1] = heigh;
         }
     }
     else if (adr[1] == regindmov)
@@ -830,8 +824,8 @@ void Emulator::str_instruction()
         heigh.push_back(hex_val[2]);
         heigh.push_back(hex_val[3]);
 
-        this->memory[regS + oper_val] = low;
-        this->memory[regS + oper_val + 1] = heigh;
+        this->memory[this->registers[regS] + oper_val] = low;
+        this->memory[this->registers[regS] + oper_val + 1] = heigh;
     }
     else if (adr[1] == mem)
     {
@@ -940,15 +934,16 @@ string Emulator::int_to_hex_lit_end(int num)
     if (result.size() > 4)
         return "FFFF";
 
-    string first = "";
-    string second = "";
-    first.push_back(result[2]);
-    first.push_back(result[3]);
-    second.push_back(result[0]);
-    second.push_back(result[1]);
-    result = "";
-    result.append(first);
-    result.append(second);
+    if (result.size() < 4)
+        for (int i = result.size() + 1; i < 5; i++)
+            result.insert(result.begin(), '0');
+
+    char c0 = result[0];
+    char c1 = result[1];
+    result[0] = result[2];
+    result[1] = result[3];
+    result[2] = c0;
+    result[3] = c1;
 
     return result;
 }

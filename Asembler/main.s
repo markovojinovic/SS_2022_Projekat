@@ -42,7 +42,7 @@ my_start:
   ldr r0, $2
   push r0
   ldr r0, $4
-  call *[r0 + destinations] # pc <= mem16[r0 + destinations] ~ mathMul ==================  greska!!!
+  call *[r0 + destinations] # pc <= mem16[r0 + destinations] ~ mathMul
   str r0, value4
 
   ldr r0, $5
