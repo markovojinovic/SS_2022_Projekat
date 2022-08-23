@@ -1,5 +1,5 @@
 #include "Emulator.h"
-#include "Asembler\OpCodeErrors.h"
+#include "..\Asembler\OpCodeErrors.h"
 #include <sstream>
 #include <math.h>
 
@@ -85,6 +85,7 @@ int Emulator::start_reading()
     this->load_memory();
 
     bool halt_cond = false;
+
     while (!halt_cond)
     {
         string code = this->memory[this->registers[pc]];
@@ -744,8 +745,13 @@ void Emulator::ldr_instruction()
         // for (int i = this->registers[sp]; i <= sp_init; i++)
         // {
         //     stack += this->memory[i];
-        //     stack += " ";
+        //     // stack += " ";
         // }
+
+        // int st = this->registers[regS];
+        // string fir = this->memory[this->registers[regS]];
+        // string fir_ = this->memory[this->registers[regS] + oper_val + 1];
+        // string sec_ = this->memory[this->registers[regS] + oper_val];
 
         string num = "";
         num.append(this->memory[this->registers[regS] + oper_val + 1]);
