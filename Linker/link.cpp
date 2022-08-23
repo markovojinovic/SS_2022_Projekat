@@ -3,28 +3,15 @@
 #include <regex>
 
 using namespace std;
-// int argc, char *argv[]
+
 int main(int argc, char *argv[])
 {
-    // char *argv[] = {
-    //     "main.exe",
-    //     "-o",
-    //     "program.hex",
-    //     "ivt.o",
-    //     "math.o",
-    //     "main.o",
-    //     "isr_reset.o",
-    //     "isr_terminal.o",
-    //     "isr_timer.o",
-    //     "isr_user0.o",
-    // };
-    // int argc = 10;
-    if (strcmp(argv[1], "-o") == 0)
+    if (strcmp(argv[1], "-hex") == 0 && strcmp(argv[2], "-o") == 0)
     {
         vector<string> input;
-        for (int i = 3; i < argc; i++)
+        for (int i = 4; i < argc; i++)
             input.push_back(argv[i]);
-        linker lk(input, argv[2]);
+        linker lk(input, argv[3]);
         if (lk.start_reading() == 0)
         {
             lk.exit_protocol();
@@ -41,7 +28,3 @@ int main(int argc, char *argv[])
     }
     return 0;
 }
-// destinations iz main fajla vidno ispada iz opsega, a jednom se uvecava
-// TODO: obraditi relativne pomeraje ( ona druga vrsta rel zapisa )
-
-// 31:50
