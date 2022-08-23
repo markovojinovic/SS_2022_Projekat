@@ -1,6 +1,7 @@
 #include "Emulator.h"
 #include "Asembler\OpCodeErrors.h"
 #include <sstream>
+#include <math.h>
 
 using namespace std;
 
@@ -58,10 +59,6 @@ const char predec = '1';
 const char preinc = '2';
 const char postdec = '3';
 const char postinc = '4';
-
-// TODO: procenat adresiranje
-
-// Greska se javlja kod ret f-je, nije dobar redosked na steku
 
 Emulator::Emulator(string input)
 {
@@ -146,7 +143,6 @@ int Emulator::start_reading()
             printError(UNDEFINED_INSTRUCTION, 0);
             return -1;
         }
-        this->num++;           // TODO: kad se ispravi program ovo skloniti
         if (this->stopProcess) // ovo ostviti
             return -1;
     }
@@ -158,7 +154,7 @@ void Emulator::exit_protocol()
 {
     // TODO: kreiranje izlaznog fajla
 
-    cout << "num = " << this->num << endl;
+    // /cout << "num = " << this->num << endl;
     cout << "--------------------------------------------" << endl
          << "Emulated processor executed halt instruction" << endl
          << "Emulated processor state:" << endl
@@ -194,7 +190,7 @@ void Emulator::load_memory()
     this->input.close();
 }
 
-void Emulator::int_instruction() // TODO: provera
+void Emulator::int_instruction()
 {
     // cout << "int_instruction" << endl;
     string arg = this->memory[this->registers[pc]++];
@@ -500,12 +496,18 @@ void Emulator::cmp_instruction()
     geek >> regS;
     stringstream geek1(arg_regD);
     geek1 >> regD;
+
     this->temp = this->registers[regD] - this->registers[regS];
+
     if (temp == 0)
         this->psw[z] = '1';
     if (temp < 0)
         this->psw[n] = '1';
-    // TODO: dodati i ostale prenose
+    if (this->temp < -max_val || this->temp > max_val)
+    {
+        this->psw[c] = '1';
+        this->psw[o] = '1';
+    }
 }
 
 void Emulator::not_instruction()
@@ -585,7 +587,6 @@ void Emulator::test_instruction()
         this->psw[z] = '1';
     if (temp < 0)
         this->psw[n] = '1';
-    // TODO: dodati i ostale prenose
 }
 
 void Emulator::shl_instruction()
@@ -600,7 +601,24 @@ void Emulator::shl_instruction()
     geek >> regS;
     stringstream geek1(arg_regD);
     geek1 >> regD;
+
+    int rez = -1;
+    if (this->registers[regS] > 0)
+    {
+        int flag = pow(2, this->registers[regS]) - 1;
+        flag <<= 16 - this->registers[regS];
+        rez = this->registers[regD] & flag;
+    }
+
     this->registers[regD] <<= this->registers[regS];
+
+    // updt psw
+    if (this->registers[regD] == 0)
+        this->psw[z] = '1';
+    if (this->registers[regD] < 0)
+        this->psw[n] = '1';
+    if (rez > 0 && rez != -1)
+        this->psw[c] = '1';
 }
 
 void Emulator::shr_instruction()
@@ -615,7 +633,23 @@ void Emulator::shr_instruction()
     geek >> regS;
     stringstream geek1(arg_regD);
     geek1 >> regD;
+
+    int rez = -1;
+    if (this->registers[regS] > 0)
+    {
+        int flag = pow(2, this->registers[regS]) - 1;
+        rez = this->registers[regD] & flag;
+    }
+
     this->registers[regD] >>= this->registers[regS];
+
+    // updt psw
+    if (this->registers[regD] == 0)
+        this->psw[z] = '1';
+    if (this->registers[regD] < 0)
+        this->psw[n] = '1';
+    if (rez > 0 && rez != -1)
+        this->psw[c] = '1';
 }
 
 void Emulator::ldr_instruction()
@@ -853,7 +887,7 @@ void Emulator::str_instruction()
     }
 }
 
-void Emulator::push(int reg) // TODO: provera
+void Emulator::push(int reg)
 {
     string mem = "";
     if (this->pushPSW)
@@ -880,7 +914,7 @@ void Emulator::push(int reg) // TODO: provera
     this->memory[this->registers[sp]--] = low;
 }
 
-void Emulator::pop(int reg) // TODO: provera
+void Emulator::pop(int reg)
 {
     string num = "";
     num.append(this->memory[++this->registers[sp]]);
