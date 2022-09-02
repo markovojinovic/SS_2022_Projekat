@@ -1,5 +1,5 @@
 #include "Emulator.h"
-#include "..\Asembler\OpCodeErrors.h"
+#include "Asembler\OpCodeErrors.h"
 #include <sstream>
 #include <math.h>
 
@@ -738,24 +738,24 @@ void Emulator::ldr_instruction()
         }
         string oper = this->get_number();
         int oper_val = this->lit_end_hex_to_int(oper);
-        if (this->num == 74 || this->num == 75)
-            oper_val++;
+        // if (this->num == 74 || this->num == 75)
+        //     oper_val++;
 
-        // string stack = "";
-        // for (int i = this->registers[sp]; i <= sp_init; i++)
-        // {
-        //     stack += this->memory[i];
-        //     // stack += " ";
-        // }
+        string stack = "";
+        for (int i = this->registers[sp]; i <= sp_init; i++)
+        {
+            stack += this->memory[i];
+            // stack += " ";
+        }
 
-        // int st = this->registers[regS];
-        // string fir = this->memory[this->registers[regS]];
-        // string fir_ = this->memory[this->registers[regS] + oper_val + 1];
-        // string sec_ = this->memory[this->registers[regS] + oper_val];
+        int st = this->registers[regS];
+        string fir = this->memory[this->registers[regS]];
+        string fir_ = this->memory[this->registers[regS] + oper_val + 1];
+        string sec_ = this->memory[this->registers[regS] + oper_val];
 
         string num = "";
-        num.append(this->memory[this->registers[regS] + oper_val + 1]);
-        num.append(this->memory[this->registers[regS] + oper_val]);
+        num.append(this->memory[this->registers[regS] + oper_val + 1]); // ovde je ispravka
+        num.append(this->memory[this->registers[regS] + oper_val + 2]);
         int val = this->lit_end_hex_to_int(num);
         this->registers[regD] = val;
     }
@@ -832,6 +832,10 @@ void Emulator::str_instruction()
 
             this->memory[this->registers[sp]--] = heigh;
             this->memory[this->registers[sp]--] = low;
+
+            string dodato = "";
+            dodato += this->memory[this->registers[sp] + 1];
+            dodato += this->memory[this->registers[sp] + 2];
         }
         else
         {
